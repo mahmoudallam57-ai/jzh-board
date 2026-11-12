@@ -355,3 +355,18 @@ test("CSV export: BOM, quoting and formula guard", async () => {
   assert.ok(r.text.includes("'=HYPERLINK(1)"), r.text);
   assert.equal(r.text.trim().split("\r\n").length, 3);
 });
+
+test("students failing logins from the school IP do not lock the teacher out", async () => {
+  for (let i = 0; i < 60; i++) {
+    await call(student, { method: "POST", action: "login", body: { name: `x${i}`, cls: "7/3", pin: "0000" }, ip: "5.5.5.5" });
+  }
+  const r = await call(teacher, { method: "POST", action: "login", body: { email: "teacher@school.ae", password: "pw-ok" }, ip: "5.5.5.5" });
+  assert.equal(r.status, 200);
+});
+
+test("a teacher PIN reset ends the student's existing sessions", async () => {
+  const a = await register("سارة");
+  assert.equal((await call(student, { action: "sync", cookie: a.cookie })).status, 200);
+  await T("POST", "act", { body: { id: a.json.student.id, action: "reset-pin", newPin: "4321" } });
+  assert.equal((await call(student, { action: "sync", cookie: a.cookie })).status, 401);
+});

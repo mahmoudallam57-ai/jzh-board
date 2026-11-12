@@ -1,50 +1,42 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createMemoryStore } from "../helpers/store-memory.js";
-import { checkLock, recordFail, recordSuccess } from "../../lib/throttle.js";
+import { checkLock, hit, recordSuccess } from "../../lib/throttle.js";
 
 const opts = { max: 5, windowSec: 900, lockSec: 900 };
 const T0 = 1_700_000_000_000;
 
-test("four failures do not lock, the fifth does", async () => {
+test("five attempts are allowed, the sixth is blocked", async () => {
   const store = createMemoryStore();
-  for (let i = 0; i < 4; i++) await recordFail(store, "k", T0 + i * 1000, opts);
-  assert.equal((await checkLock(store, "k", T0 + 5000)).locked, false);
-  await recordFail(store, "k", T0 + 5000, opts);
-  const c = await checkLock(store, "k", T0 + 6000);
-  assert.equal(c.locked, true);
-  assert.ok(
-    c.retryAfterSec > 0 && c.retryAfterSec <= 900,
-    String(c.retryAfterSec),
-  );
+  for (let i = 0; i < 5; i++) assert.equal((await hit(store, "k", T0 + i, opts)).locked, false, `attempt ${i + 1}`);
+  const sixth = await hit(store, "k", T0 + 10, opts);
+  assert.equal(sixth.locked, true);
+  assert.ok(sixth.retryAfterSec > 0 && sixth.retryAfterSec <= 900);
+  assert.equal((await checkLock(store, "k", T0 + 20)).locked, true);
 });
 
-test("the lock expires after 15 minutes and the counter restarts", async () => {
+test("the lock expires after 15 minutes and the count restarts", async () => {
   const store = createMemoryStore();
-  for (let i = 0; i < 5; i++) await recordFail(store, "k", T0, opts);
-  assert.equal((await checkLock(store, "k", T0 + 901_000)).locked, false);
-  await recordFail(store, "k", T0 + 902_000, opts);
-  assert.equal((await checkLock(store, "k", T0 + 903_000)).locked, false);
-  assert.equal((await store.getAttempt("k")).fails, 1);
+  for (let i = 0; i < 5; i++) await hit(store, "k", T0, opts);
+  const after = await hit(store, "k", T0 + 901_000, opts);
+  assert.deepEqual([after.locked, after.fails], [false, 1]);
 });
 
-test("failures older than the window do not accumulate", async () => {
+test("attempts older than the window do not accumulate", async () => {
   const store = createMemoryStore();
-  for (let i = 0; i < 4; i++) await recordFail(store, "k", T0, opts);
-  await recordFail(store, "k", T0 + 901_000, opts);
-  assert.equal((await checkLock(store, "k", T0 + 901_500)).locked, false);
+  for (let i = 0; i < 4; i++) await hit(store, "k", T0, opts);
+  assert.equal((await hit(store, "k", T0 + 901_000, opts)).fails, 1);
 });
 
 test("success clears the record", async () => {
   const store = createMemoryStore();
-  for (let i = 0; i < 4; i++) await recordFail(store, "k", T0, opts);
+  for (let i = 0; i < 4; i++) await hit(store, "k", T0, opts);
   await recordSuccess(store, "k");
   assert.equal(await store.getAttempt("k"), null);
 });
 
-test("lock state lives in the store, not in module memory", async () => {
+test("a parallel burst cannot run past the limit", async () => {
   const store = createMemoryStore();
-  for (let i = 0; i < 5; i++) await recordFail(store, "k", T0, opts);
-  const fresh = await import("../../lib/throttle.js?again");
-  assert.equal((await fresh.checkLock(store, "k", T0 + 1000)).locked, true);
+  const results = await Promise.all(Array.from({ length: 50 }, () => hit(store, "k", T0, opts)));
+  assert.equal(results.filter(r => !r.locked).length, 5);
 });

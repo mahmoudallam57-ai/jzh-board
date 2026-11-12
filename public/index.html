@@ -1417,11 +1417,11 @@ html{scrollbar-gutter:stable}  /* مساحة شريط التمرير محجوز�
       </div>
     </div>
     <label class="tclab" for="tMail2">البريد<span class="en inl">Email</span></label>
-    <div class="tcrow"><input id="tMail2" type="email" dir="ltr" autocomplete="username" maxlength="120" placeholder="بريد المعلّم" enterkeyhint="next"></div>
+    <div class="tcrow"><input id="tMail2" type="email" dir="ltr" autocomplete="off" maxlength="120" placeholder="بريد المعلّم" enterkeyhint="next"></div>
     <label class="tclab" for="tPin2">كلمة المرور<span class="en inl">Password</span></label>
     <div class="tcrow">
       <button class="tceye" id="tEye2" type="button" aria-pressed="false" aria-label="إظهار الرمز"><svg viewBox="0 0 24 24"><path d="M2 12s3.8-6.5 10-6.5S22 12 22 12s-3.8 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.7"/></svg></button>
-      <input id="tPin2" type="password" dir="ltr" autocomplete="current-password" maxlength="128" placeholder="كلمة المرور" enterkeyhint="go">
+      <input id="tPin2" type="password" dir="ltr" autocomplete="off" maxlength="128" placeholder="كلمة المرور" enterkeyhint="go">
     </div>
     <span class="gerr" id="tErr2" role="alert"></span>
     <button class="tcgo" id="tGo2" type="button"><svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"/><path d="M12 12h9"/><path d="M17.5 12v3.4M20.3 12v2.4"/></svg>دخول لوحة المعلّم</button>
@@ -2393,7 +2393,7 @@ var SYNC = (function () {
       o.headers["Content-Type"] = "application/json";
       o.body = JSON.stringify(body);
     }
-    if (keep) o.keepalive = true;
+    if (keep && (!o.body || o.body.length < 60000)) o.keepalive = true;
     return fetch("/api/s/" + path, o).then(function (r) {
       return r.text().then(function (t) {
         var j = null;
@@ -2453,29 +2453,30 @@ var SYNC = (function () {
     m.t = syncObj(doc._t);
     wr(keys.meta, m);
   }
-  function reloadWith(doc, msg) {
+  /* إن منع حارس التكرار إعادة التحميل لا نلمس meta إطلاقاً، ونعيد المحاولة بعد انقضاء النافذة —
+     فلا يُكتب فوق الخادم بنسخة قديمة ولا يعود تقدّم أعاد المعلّم ضبطه */
+  function reloadWith(doc, msg, version, epoch) {
     try {
       var last = +sessionStorage.getItem("jzh.rl") || 0;
-      if (Date.now() - last < 8000) return false;
+      if (Date.now() - last < 8000) {
+        clearTimeout(retryT);
+        retryT = setTimeout(pull, 8500 - (Date.now() - last));
+        return false;
+      }
       sessionStorage.setItem("jzh.rl", String(Date.now()));
     } catch (e) {}
     X.frozen = true;
     clearTimeout(timer);
     clearTimeout(retryT);
+    meta.version = version;
+    meta.epoch = epoch;
     install(K, doc, meta);
     if (msg) hooks.toast(msg);
-    setTimeout(
-      function () {
-        location.reload();
-      },
-      msg ? 900 : 0,
-    );
+    setTimeout(function () { location.reload(); }, msg ? 900 : 0);
     return false;
   }
   function adopt(sd, version, epoch, msg) {
-    meta.version = version;
-    meta.epoch = epoch;
-    return reloadWith(sd, msg);
+    return reloadWith(sd, msg, version, epoch);
   }
   function fail() {
     bar(
@@ -2496,21 +2497,20 @@ var SYNC = (function () {
     }
     hooks.onCert(v);
   }
-  function conflict(j, localDoc) {
+  /* يُدمج ما على الجهاز لحظة وصول الرد (لا لقطة ما قبل الطلب)، فلا يضيع ما كُتب أثناء الطلب */
+  function conflict(j) {
     var sv = j.server,
       sd = serverDoc(sv.state);
     if (j.error === "epoch")
-      return adopt(
-        sd,
-        sv.version,
-        sv.epoch,
-        "أعاد معلّمك ضبط تقدّمك — نبدأ من جديد",
-      );
-    var m = mergeDoc(localDoc, sd);
-    meta.version = sv.version;
-    saveMeta();
-    if (same(m, localDoc)) return push();
-    return reloadWith(m, "وصل تقدّم من جهاز آخر — نحدّث الصفحة");
+      return adopt(sd, sv.version, sv.epoch, "أعاد معلّمك ضبط تقدّمك — نبدأ من جديد");
+    var localDoc = current(),
+      m = mergeDoc(localDoc, sd);
+    if (same(m, localDoc)) {
+      meta.version = sv.version;
+      saveMeta();
+      return push();
+    }
+    return reloadWith(m, "وصل تقدّم من جهاز آخر — نحدّث الصفحة", sv.version, meta.epoch);
   }
   function push(keep) {
     if (!who || blocked || X.frozen) return Promise.resolve(false);
@@ -2547,7 +2547,7 @@ var SYNC = (function () {
           return true;
         }
         if (r.status === 409 && r.json && r.json.server)
-          return conflict(r.json, d);
+          return conflict(r.json);
         if (r.status === 401) {
           blocked = true;
           hooks.needLogin(who);
@@ -2587,9 +2587,9 @@ var SYNC = (function () {
         if (j.epoch !== meta.epoch) return adopt(sd, j.version, j.epoch, null);
         var ld = current(),
           m = mergeDoc(ld, sd);
+        if (!same(m, ld) || setChanged) return reloadWith(m, null, j.version, meta.epoch);
         meta.version = j.version;
         saveMeta();
-        if (!same(m, ld) || setChanged) return reloadWith(m, null);
         if (!same(m, sd)) return push();
       })
       .catch(function () {
@@ -2791,8 +2791,7 @@ function show(id,push){
       return;
     }
     if(!SYNC.certApproved()){
-      if(SYNC.who) toast("شهادتك بانتظار اعتماد معلّمك");
-      else openLock(function(){ show("cert") },"cert");   /* ضيف بلا حساب: يفتحها المعلّم بتسجيل دخوله */
+      toast(SYNC.who ? "شهادتك بانتظار اعتماد معلّمك" : "الشهادة يعتمدها معلّمك — ادخل باسمك ورمزك أولاً");
       return;
     }
   }
@@ -3012,12 +3011,12 @@ function tcErr(msg){
   $("#tErr").textContent=msg;
   var c=$("#tcard"); c.classList.remove("shake"); void c.offsetWidth; c.classList.add("shake");
 }
-var AUTHED=false, PENDING=null, LOCK_HOME=false;
+var AUTHED=false, PENDING=null, LOCK_HOME=false, LOCK_KIND="teacher";
 var LOCK_TXT={
   teacher:"سجّل دخولك ببريد المعلّم وكلمة المرور. هذه اللوحة فيها نتائج الطلاب وأدوات التحكّم في الصفحة.",
   lang:"الترجمة الإنجليزية يتحكّم بها المعلّم وحده. سجّل دخولك لإظهارها أو إخفائها.",
   res:"أدوات مصادر التعلم للمعلّم وحده. سجّل دخولك لتحرير الروابط أو نسخ القائمة.",
-  cert:"الشهادة يعتمدها المعلّم. سجّل دخولك لفتحها على هذا الجهاز."
+  cert:"الشهادة يعتمدها المعلّم من لوحته."
 };
 function certReq(){
   var LS=liveSections();
@@ -3043,13 +3042,13 @@ function paintCertReq(){
       '<span>أجب على بوكلت التقويم كاملاً <b>('+r.ver+" / "+(r.qtot||25)+' بنداً)</b>'+E("Answer the whole assessment booklet")+'</span></li>'+
     (appr ? '<li class="done"><span class="mk">✓</span><span>اعتمدها معلّمك'+E("Your teacher approved it")+'</span></li>'
           : '<li class="key"><span class="mk">🔑</span><span>ثم يعتمدها معلّمك من لوحته'+E("Then your teacher approves it from the teacher panel")+'</span></li>');
-  var open=r.ok&&(appr||AUTHED||!SYNC.who);
+  var open=r.ok&&(appr||AUTHED);
   var btn=$(".cbgo");
   if(btn){
     btn.disabled=!open;
     btn.title = !r.ok ? "أكمل البوابات وبوكلت التقويم أولاً"
               : appr||AUTHED ? "جاهزة — اضغط لاستلام شهادتك"
-              : SYNC.who ? "بانتظار اعتماد معلّمك" : "جاهزة — يفتحها معلّمك بتسجيل دخوله";
+              : SYNC.who ? "بانتظار اعتماد معلّمك" : "الشهادة تحتاج دخولك باسمك ورمزك ليعتمدها معلّمك";
   }
   var hv=$("#v-harvest [data-go='cert']");
   if(hv){ hv.disabled=!open; hv.style.opacity=open?"":"0.55"; }
@@ -3059,7 +3058,7 @@ function teacherOnly(fn,kind){
 }
 function openLock(after,kind){
   var l=$("#tlock"); if(!l) return;
-  PENDING=after||null; LOCK_HOME=(kind||"teacher")==="teacher";
+  PENDING=after||null; LOCK_KIND=kind||"teacher"; LOCK_HOME=LOCK_KIND==="teacher";
   var note=$("#tlNote"); if(note) note.textContent=LOCK_TXT[kind||"teacher"]||LOCK_TXT.teacher;
   l.hidden=false; $("#tErr2").textContent=""; $("#tPin2").value="";
   setTimeout(function(){ try{ ($("#tMail2").value?$("#tPin2"):$("#tMail2")).focus() }catch(e){} },120);
@@ -3077,8 +3076,10 @@ function lockIn(){
       return }
     TTOKEN=r.json.token; AUTHED=true; $("#tPin2").value=""; closeLock();
     try{ if(!$("#gate").hidden) closeGate(false) }catch(e){}   /* المعلّم لا يُسأل عن اسم طالب */
-    var f=PENDING; PENDING=null;
+    var f=PENDING, kind=LOCK_KIND; PENDING=null;
     if(f) f(); else show("teacher");
+    /* فتحٌ لمرة واحدة: خارج لوحة المعلّم لا يبقى توكن المعلّم حيّاً في الصفحة */
+    if(kind!=="teacher"){ TTOKEN=null; AUTHED=false; try{paintCertReq()}catch(e){} }
   });
 }
 (function(){
@@ -4455,6 +4456,9 @@ function stOpen(id){
     try{ txt=teacherText() }catch(e){ txt="" } finally{ state=keep }
     var q=pickQuiz(st.quiz), ql="درجات التقويم — "+SYNC_TRACKS.map(function(tk){
       var x=trackStat(q,tk); return tk.toUpperCase()+": "+(x.n?Math.round(x.pts/x.n*400)/10:0)+"/40 ("+x.ver+"/"+x.n+")" }).join(" · ");
+    if(q) SYNC_TRACKS.forEach(function(tk){ var t=q.S&&q.S[tk]; if(!t) return;
+      ["text","essay"].forEach(function(bk){ (Array.isArray(t[bk])?t[bk]:[]).forEach(function(it,i){
+        if(it&&typeof it.val==="string"&&it.val.trim()) ql+="\n"+tk.toUpperCase()+" · "+(bk==="essay"?"مقالي":"نص")+" "+(i+1)+": "+it.val.trim() }) }) });
     txt=txt.split("\n").filter(function(l){ return l.indexOf("درجات التقويم")!==0 }).join("\n").replace(/^(البوابات المستكشفة:.*)$/m,"$1\n"+ql);
     var others=ST.list.filter(function(x){ return x.id!==id && x.cls===s.cls });
     box.innerHTML=
@@ -4468,7 +4472,7 @@ function stOpen(id){
         '<button class="btn outline" type="button" data-a="rename">غيّر الاسم</button>'+
       '</div><div class="stacts">'+
         (others.length?'<select id="stMerge" aria-label="سجلّ مكرّر">'+others.map(function(o){ return '<option value="'+esc(o.id)+'">'+esc(o.name)+'</option>' }).join("")+'</select>'+
-          '<button class="btn outline" type="button" data-a="merge">ادمج هذا السجلّ فيه</button>':'')+
+          '<button class="btn outline" type="button" data-a="merge">ادمج السجلّ المختار في '+esc(d.student.name)+' (يُحذف المختار)</button>':'')+
         '<button class="btn outline danger" type="button" data-a="reset-progress">صفّر تقدّمه</button>'+
         '<button class="btn outline danger" type="button" data-a="delete">احذف الطالب</button>'+
       '</div>'+

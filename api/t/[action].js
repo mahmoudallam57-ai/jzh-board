@@ -14,11 +14,11 @@ import {
   isValidPin,
 } from "../../lib/normalize.js";
 import { hashPin } from "../../lib/pin.js";
-import { checkLock, recordFail, recordSuccess } from "../../lib/throttle.js";
+import { checkLock, hit, recordSuccess } from "../../lib/throttle.js";
 import { toCsv } from "../../lib/csv.js";
 
-const LIMIT = { max: 5, windowSec: 900, lockSec: 900 };
-const IP_LIMIT = { max: 20, windowSec: 900, lockSec: 900 };
+const LIMIT = { max: 5, windowSec: 900, lockSec: 900 }; // per teacher email, counted before sign-in
+const IP_LIMIT = { max: 50, windowSec: 900, lockSec: 900 }; // per IP, failures only, own namespace
 const SETTING_KEYS = ["vis", "en", "hub", "pres", "ask", "res"];
 const DAY = 24 * 3600_000;
 
@@ -50,21 +50,19 @@ const actions = {
       .toLowerCase();
     const password = String(body.password || "");
     if (!email || !password) throw new HttpError(400, "bad_input");
-    const keys = [`tch:${email}`, `ip:${clientIp(req)}`];
-    for (const k of keys) {
-      const l = await checkLock(deps.store, k, deps.now());
-      if (l.locked)
-        throw new HttpError(429, "locked", { retryAfterSec: l.retryAfterSec });
-    }
+    const tchKey = `tch:${email}`, ipKey = `tip:${clientIp(req)}`;
+    const ipLock = await checkLock(deps.store, ipKey, deps.now());
+    if (ipLock.locked) throw new HttpError(429, "locked", { retryAfterSec: ipLock.retryAfterSec });
+    const h = await hit(deps.store, tchKey, deps.now(), LIMIT);
+    if (h.locked) throw new HttpError(429, "locked", { retryAfterSec: h.retryAfterSec });
     const session = await deps.teacherAuth.signIn(email, password);
     if (!session) {
-      await recordFail(deps.store, keys[0], deps.now(), LIMIT);
-      await recordFail(deps.store, keys[1], deps.now(), IP_LIMIT);
+      await hit(deps.store, ipKey, deps.now(), IP_LIMIT);
       throw new HttpError(401, "invalid");
     }
     if (!deps.teacherEmails.includes(String(session.email).toLowerCase()))
       throw new HttpError(403, "forbidden");
-    await recordSuccess(deps.store, keys[0]);
+    await recordSuccess(deps.store, tchKey);
     send(res, 200, { token: session.token, expiresIn: session.expiresIn });
   },
 

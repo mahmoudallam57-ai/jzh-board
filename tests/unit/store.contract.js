@@ -210,42 +210,28 @@ export function runContract(label, makeStore, { skip = false } = {}) {
     },
   );
 
-  test(
-    `${label}: mergeStudents keeps one student with the newer progress`,
-    { skip },
-    async () => {
-      const { store, cls, mk, cleanup } = await setup();
-      try {
-        const keep = await mk("keep");
-        const drop = await mk("drop");
-        await store.putProgress(drop.id, {
-          state: { d: 1 },
-          summary: { visited: 3 },
-          baseVersion: 0,
-          epoch: 0,
-        });
-        await store.putProgress(drop.id, {
-          state: { d: 2 },
-          summary: { visited: 4 },
-          baseVersion: 1,
-          epoch: 0,
-        });
-        await store.setCertificate(drop.id, "t@x");
-        await store.mergeStudents(keep.id, drop.id);
-        const list = await store.listStudents({ cls });
-        assert.deepEqual(
-          list.map((s) => s.id),
-          [keep.id],
-        );
-        assert.deepEqual((await store.getProgress(keep.id)).state, { d: 2 });
-        assert.equal(list[0].certApproved, true);
-        assert.equal(list[0].summary.visited, 4);
-        assert.equal("pinHash" in list[0], false);
-      } finally {
-        await cleanup();
-      }
-    },
-  );
+  test(`${label}: mergeStudents keeps one student and both records' achievements`, { skip }, async () => {
+    const { store, cls, mk, cleanup } = await setup();
+    try {
+      const keep = await mk("keep");
+      const drop = await mk("drop");
+      const sum = (v, sub) => ({ visited: v, quizTrack: sub ? "map" : null, quizScore: sub ? 90 : null, submitted: sub });
+      await store.putProgress(keep.id, { state: { main: { visited: { story: 1 } } }, summary: sum(1, false), baseVersion: 0, epoch: 0 });
+      const quiz = { S: { map: { mcq: [{ ver: true, pts: 1 }] } }, B: {}, P: {}, PI: {}, AI: {} };
+      await store.putProgress(drop.id, { state: { main: { visited: { film: 1 } }, quiz }, summary: sum(1, true), baseVersion: 0, epoch: 0 });
+      await store.setCertificate(drop.id, "t@x");
+      await store.mergeStudents(keep.id, drop.id);
+      const list = await store.listStudents({ cls });
+      assert.deepEqual(list.map(s => s.id), [keep.id]);
+      const p = await store.getProgress(keep.id);
+      assert.deepEqual(p.state.main.visited, { story: 1, film: 1 });
+      assert.equal(p.state.quiz.S.map.mcq[0].ver, true);
+      assert.equal(p.version, 2);
+      assert.equal(list[0].certApproved, true);
+      assert.equal(list[0].summary.submitted, true);
+      assert.equal("pinHash" in list[0], false);
+    } finally { await cleanup(); }
+  });
 
   test(
     `${label}: updateStudent rename collision is name_taken`,
@@ -298,4 +284,14 @@ export function runContract(label, makeStore, { skip = false } = {}) {
       assert.equal(await store.getAttempt(key), null);
     },
   );
+
+  test(`${label}: hitAttempt counts atomically under a parallel burst`, { skip }, async () => {
+    const store = await makeStore();
+    const key = "stu:" + tag();
+    const now = Date.now();
+    const rs = await Promise.all(Array.from({ length: 20 }, () =>
+      store.hitAttempt(key, now, { max: 5, windowSec: 900, lockSec: 900 })));
+    assert.equal(rs.filter(r => !r.blocked).length, 5);
+    await store.clearAttempt(key);
+  });
 }

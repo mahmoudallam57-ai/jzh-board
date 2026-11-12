@@ -52,3 +52,15 @@ def test_unreachable_server_says_so(app):
         timeout=TMO,
     )
     assert not page.locator("#v-teacher").is_visible()
+
+
+def test_translation_unlock_is_one_shot(app):
+    page = app()
+    page.click("#langHero")
+    unlock_teacher(page)
+    assert get_state(page)["en"] == 1
+    # the token did not stay alive: the panel still asks for sign-in
+    page.click("#btnTeacher")
+    page.wait_for_selector("#tlock:not([hidden])", timeout=TMO)
+    assert not page.locator("#v-teacher").is_visible()
+    assert page.get_attribute("#tPin2", "autocomplete") == "off"

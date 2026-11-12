@@ -267,7 +267,7 @@ def _cert_page(app, quiz_shape, visited, done_track=None, verified=None, vis=Non
     return page
 
 
-def test_cert_needs_all_gates_and_quiz_and_passcode(app, quiz_shape):
+def test_cert_needs_all_gates_and_quiz_and_approval(app, quiz_shape):
     n_items = sum(quiz_shape["lap"].values())
     assert n_items == 25
 
@@ -293,16 +293,21 @@ def test_cert_needs_all_gates_and_quiz_and_passcode(app, quiz_shape):
     assert _cert_btn_state(page) == [True, True]
     assert "24 / 25" in page.text_content("#cbReq")
 
-    # all gates + one track fully verified: ready, but the passcode is still required
+    # all gates + one track fully verified, as a guest (no account): still closed, and the
+    # teacher's password is never asked for on the student's device
     page = _cert_page(app, quiz_shape, GATES, "lap")
-    assert _cert_btn_state(page) == [False, False]
+    assert _cert_btn_state(page) == [True, True]
     assert "25 / 25" in page.text_content("#cbReq")
-    page.click(".cbgo")
-    page.wait_for_selector("#tlock", state="visible", timeout=TMO)
-    assert not page.locator("#v-cert").is_visible()
-    wrong_login(page)
-    assert not page.locator("#v-cert").is_visible()
+    assert "ادخل" in (page.get_attribute(".cbgo", "title") or "") or "دخولك" in (page.get_attribute(".cbgo", "title") or "")
+    page.evaluate("() => document.querySelector('.cbgo').click()")
+    assert not page.locator("#tlock").is_visible() and not page.locator("#v-cert").is_visible()
+
+    # the teacher signed in to the panel on their own device can open it
+    go_hash_and_reload(page, "#teacher")
     unlock_teacher(page)
+    page.wait_for_selector("#v-teacher", state="visible", timeout=TMO)
+    page.click('.ttab[data-t="tools"]')
+    page.click("#tCert")
     page.wait_for_selector("#v-cert", state="visible", timeout=TMO)
 
     # the #cert route never opens the certificate by itself, even on a ready board
@@ -314,7 +319,7 @@ def test_cert_needs_all_gates_and_quiz_and_passcode(app, quiz_shape):
 
     # a hidden gate is not required: 11 live gates visited is enough
     page = _cert_page(app, quiz_shape, [g for g in GATES if g != "film"], "hap", vis={"gate.film": 0})
-    assert _cert_btn_state(page) == [False, False]
+    assert "11 / 11" in page.text_content("#cbGates") and "25 / 25" in page.text_content("#cbReq")
     assert "11 / 11" in page.text_content("#cbGates")
 
 

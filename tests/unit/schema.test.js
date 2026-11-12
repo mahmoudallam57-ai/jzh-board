@@ -39,3 +39,11 @@ test("no policies: only the service key may touch the data", () => {
 test("students are unique per normalized name and class", () => {
   assert.match(sql, /unique\s*\(\s*name_norm\s*,\s*cls\s*\)/);
 });
+
+test("server functions are not callable by anon or authenticated", () => {
+  for (const fn of ["put_progress", "hit_attempt"]) {
+    assert.match(sql, new RegExp(`revoke all on function public\\.${fn}\\([^)]*\\) from public, anon, authenticated`), fn);
+    assert.match(sql, new RegExp(`create or replace function public\\.${fn}[\\s\\S]*?security invoker strict`), fn);
+  }
+  assert.doesNotMatch(sql, /security definer/);
+});

@@ -143,3 +143,8 @@ test("summarize counts only live gates and reports the best track", () => {
     submitted: false,
   });
 });
+
+test("lib/merge.js is generated from the page block and has not drifted", () => {
+  const lib = readFileSync(new URL("../../lib/merge.js", import.meta.url), "utf8");
+  assert.ok(lib.includes(m[0]), "run: python3 scripts/gen-merge.py");
+});

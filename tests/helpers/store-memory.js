@@ -1,3 +1,4 @@
+import { mergeProgress } from "../../lib/merge-progress.js";
 // In-memory Store used by unit tests. Same contract as lib/store-supabase.js.
 import { randomUUID } from "node:crypto";
 
@@ -74,14 +75,8 @@ export function createMemoryStore({ now = () => Date.now() } = {}) {
         throw new Error("not_found");
       const k = prog(keepId),
         d = prog(dropId);
-      if (d.version > k.version) {
-        progress.set(keepId, {
-          state: clone(d.state),
-          summary: clone(d.summary),
-          version: k.version + 1,
-          resetEpoch: k.resetEpoch,
-        });
-      }
+      const merged = mergeProgress(k, d);
+      progress.set(keepId, { state: merged.state, summary: merged.summary, version: k.version + 1, resetEpoch: k.resetEpoch });
       if (certs.has(dropId) && !certs.has(keepId))
         certs.set(keepId, certs.get(dropId));
       await this.deleteStudent(dropId);
@@ -154,6 +149,15 @@ export function createMemoryStore({ now = () => Date.now() } = {}) {
     async setCertificate(sid, approvedBy) {
       if (approvedBy === null) certs.delete(sid);
       else certs.set(sid, { approvedAt: now(), approvedBy });
+    },
+    async hitAttempt(key, now, { max, windowSec, lockSec }) {
+      const r = attempts.get(key);
+      if (r?.lockedUntil && r.lockedUntil > now) return { fails: r.fails, lockedUntil: r.lockedUntil, blocked: true };
+      const fresh = !r || r.lockedUntil || r.firstAt == null || r.firstAt + windowSec * 1000 < now;
+      const next = fresh ? { fails: 1, firstAt: now, lockedUntil: null } : { ...r, fails: r.fails + 1 };
+      if (next.fails >= max) next.lockedUntil = now + lockSec * 1000;
+      attempts.set(key, next);
+      return { fails: next.fails, lockedUntil: next.lockedUntil, blocked: false };
     },
     async getAttempt(key) {
       return attempts.has(key) ? clone(attempts.get(key)) : null;

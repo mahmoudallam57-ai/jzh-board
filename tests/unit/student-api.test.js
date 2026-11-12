@@ -73,15 +73,30 @@ test("five wrong PINs lock the student even with the right PIN", async () => {
   );
 });
 
-test("one IP is limited to 20 failures per 15 minutes across names", async () => {
-  for (let i = 0; i < 20; i++)
-    await login({ name: `x${i}`, cls: "7/3", pin: "0000" }, { ip: "9.9.9.9" });
+test("a class behind one school IP is not locked out by ordinary mistakes", async () => {
+  await reg({ name: "سارة", cls: "7/3", pin: "1234" }, { ip: "9.9.9.9" });
+  for (let i = 0; i < 40; i++) await login({ name: `x${i}`, cls: "7/3", pin: "0000" }, { ip: "9.9.9.9" });
+  for (let i = 0; i < 30; i++) await reg({ name: "سارة", cls: "7/3", pin: "5555" }, { ip: "9.9.9.9" });
+  assert.equal((await login({ name: "سارة", cls: "7/3", pin: "1234" }, { ip: "9.9.9.9" })).status, 200);
+});
+
+test("one IP is cut off after 200 failed logins in 15 minutes", async () => {
   await reg({ name: "سارة", cls: "7/3", pin: "1234" }, { ip: "1.1.1.1" });
-  const r = await login(
-    { name: "سارة", cls: "7/3", pin: "1234" },
-    { ip: "9.9.9.9" },
-  );
-  assert.equal(r.status, 429);
+  for (let i = 0; i < 200; i++) await login({ name: `x${i}`, cls: "7/3", pin: "0000" }, { ip: "9.9.9.9" });
+  assert.equal((await login({ name: "سارة", cls: "7/3", pin: "1234" }, { ip: "9.9.9.9" })).status, 429);
+});
+
+test("a parallel burst of guesses gets at most five tries at the PIN", async () => {
+  await reg({ name: "سارة", cls: "7/3", pin: "1234" });
+  const rs = await Promise.all(Array.from({ length: 50 }, (_, i) =>
+    login({ name: "سارة", cls: "7/3", pin: String(1000 + i * 7).padStart(4, "0").slice(-4) }, { ip: `10.9.${i}.1` })));
+  assert.ok(rs.filter(r => r.status !== 429).length <= 5, rs.map(r => r.status).join(","));
+});
+
+test("register attempts from one IP are capped", async () => {
+  let last;
+  for (let i = 0; i < 101; i++) last = await reg({ name: `ط${i}`, cls: "7/3", pin: "1234" }, { ip: "8.8.8.8" });
+  assert.equal(last.status, 429);
 });
 
 test("register: duplicate name is 409, bad input is 400", async () => {
