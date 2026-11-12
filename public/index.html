@@ -1393,11 +1393,11 @@ html{scrollbar-gutter:stable}  /* مساحة شريط التمرير محجوز�
     </div>
 
     <label class="tclab" for="tMail">البريد<span class="en inl">Email</span></label>
-    <div class="tcrow"><input id="tMail" type="email" dir="ltr" autocomplete="username" maxlength="120" placeholder="بريد المعلّم" enterkeyhint="next"></div>
+    <div class="tcrow"><input id="tMail" type="email" dir="ltr" autocomplete="off" maxlength="120" placeholder="بريد المعلّم" enterkeyhint="next"></div>
     <label class="tclab" for="tPin">كلمة المرور<span class="en inl">Password</span></label>
     <div class="tcrow">
       <button class="tceye" id="tEye" type="button" aria-pressed="false" aria-label="إظهار الرمز"><svg viewBox="0 0 24 24"><path d="M2 12s3.8-6.5 10-6.5S22 12 22 12s-3.8 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.7"/></svg></button>
-      <input id="tPin" type="password" dir="ltr" autocomplete="current-password" maxlength="128" placeholder="كلمة المرور" enterkeyhint="go">
+      <input id="tPin" type="password" dir="ltr" autocomplete="off" maxlength="128" placeholder="كلمة المرور" enterkeyhint="go">
     </div>
     <span class="gerr" id="tErr" role="alert"></span>
 
@@ -1890,7 +1890,8 @@ html{scrollbar-gutter:stable}  /* مساحة شريط التمرير محجوز�
 
 <!-- ======================= لوحة المعلّم ======================= -->
 <section class="view" id="v-teacher" hidden><div class="wrap">
-  <div class="sec-title"><span class="pill brass">للمعلّم</span><h2>لوحة المعلّم<span class="en">Teacher Panel</span></h2></div>
+  <div class="sec-title"><span class="pill brass">للمعلّم</span><h2>لوحة المعلّم<span class="en">Teacher Panel</span></h2>
+    <button class="btn outline" id="tOut" type="button" style="margin-inline-start:auto">خروج المعلّم<span class="en inl">Sign out</span></button></div>
   <p class="sec-sub">كل ما أنجزه هذا الطالب على هذا الجهاز، مجموعاً في شاشة واحدة. انسخ التقرير وسلّمه أو احفظه في ملف الطالب.</p>
   <div class="ttabs" role="tablist">
     <button class="ttab" role="tab" data-t="students" aria-selected="false">الطلاب<span class="en inl">Students</span></button>
@@ -2997,6 +2998,19 @@ function loginMsg(r){
   if(r.status===400) return "اكتب البريد وكلمة المرور · Enter email and password";
   return "تعذّر الاتصال بالخادم — تحقّق من الشبكة · Server unreachable";
 }
+/* خروج المعلّم: يدوياً، أو تلقائياً بعد ١٥ دقيقة بلا نشاط — فلا تبقى جلسته مفتوحة على جهاز مشترك */
+var TIDLE=null;
+function teacherOut(quiet){
+  TTOKEN=null; AUTHED=false; clearTimeout(TIDLE);
+  try{ if(typeof rEdit!=="undefined" && rEdit){ rEdit=false; paintRes() } }catch(e){}
+  try{ paintCertReq() }catch(e){}
+  if(!quiet){ toast("خرجت من لوحة المعلّم"); if(cur==="teacher"||cur==="cert") show("home") }
+}
+function teacherIdle(){
+  clearTimeout(TIDLE);
+  if(TTOKEN) TIDLE=setTimeout(function(){ teacherOut(false) },15*60*1000);
+}
+["pointerdown","keydown"].forEach(function(ev){ document.addEventListener(ev,function(){ if(TTOKEN) teacherIdle() },true) });
 function tfetch(path,opts){
   opts=Object.assign({},opts||{}); var h=Object.assign({},opts.headers||{});
   h.Authorization="Bearer "+TTOKEN;
@@ -3079,7 +3093,7 @@ function lockIn(){
     var f=PENDING, kind=LOCK_KIND; PENDING=null;
     if(f) f(); else show("teacher");
     /* فتحٌ لمرة واحدة: خارج لوحة المعلّم لا يبقى توكن المعلّم حيّاً في الصفحة */
-    if(kind!=="teacher"){ TTOKEN=null; AUTHED=false; try{paintCertReq()}catch(e){} }
+    if(kind!=="teacher"){ teacherOut(true) } else teacherIdle();
   });
 }
 (function(){
@@ -3106,7 +3120,7 @@ function teacherIn(){
   teacherLogin(m,v).then(function(r){
     go.disabled=false;
     if(r.status!==200||!r.json||!r.json.token){ $("#tPin").value=""; $("#tPin").focus(); tcErr(loginMsg(r)); return }
-    TTOKEN=r.json.token; AUTHED=true; $("#tErr").textContent=""; $("#tPin").value="";
+    TTOKEN=r.json.token; AUTHED=true; teacherIdle(); $("#tErr").textContent=""; $("#tPin").value="";
     closeGate(false);
     setTimeout(function(){ show("teacher") },260);
   });
@@ -4547,6 +4561,7 @@ function openTab(k){
   if(k==="students" && AUTHED){ stLoadClasses().then(stLoad) }
 }
 $$(".ttab").forEach(function(t){ t.addEventListener("click",function(){ openTab(t.dataset.t) }) });
+$("#tOut").addEventListener("click",function(){ teacherOut(false) });
 
 /* إعدادات العرض */
 function paintSets(){

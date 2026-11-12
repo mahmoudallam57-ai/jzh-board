@@ -64,3 +64,16 @@ def test_translation_unlock_is_one_shot(app):
     page.wait_for_selector("#tlock:not([hidden])", timeout=TMO)
     assert not page.locator("#v-teacher").is_visible()
     assert page.get_attribute("#tPin2", "autocomplete") == "off"
+
+
+def test_teacher_can_sign_out_of_the_panel(app):
+    page = app()
+    page.click("#btnTeacher")
+    unlock_teacher(page)
+    page.wait_for_selector("#v-teacher", state="visible", timeout=TMO)
+    page.click("#tOut")
+    page.wait_for_selector("#home", state="visible", timeout=TMO)
+    page.click("#btnTeacher")
+    page.wait_for_selector("#tlock:not([hidden])", timeout=TMO)
+    assert not page.locator("#v-teacher").is_visible()
+    assert page.get_attribute("#tPin", "autocomplete") == "off"
