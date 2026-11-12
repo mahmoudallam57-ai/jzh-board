@@ -467,6 +467,15 @@ html{scrollbar-gutter:stable}  /* مساحة شريط التمرير محجوز�
   background:var(--inset);color:var(--fg);font-family:var(--body);font-size:1.05rem;
   transition:border-color .22s ease,box-shadow .22s ease}
 .gfield input:focus{outline:none;border-color:var(--sea-2);box-shadow:0 0 0 4px color-mix(in srgb,var(--sea-2) 22%,transparent)}
+.gsel{width:100%;padding:14px 16px;border-radius:14px;border:1.6px solid var(--line);background:var(--inset);
+  color:var(--fg);font-family:var(--body);font-size:1.05rem;font-weight:600}
+.gsel:focus{outline:none;border-color:var(--sea-2);box-shadow:0 0 0 4px color-mix(in srgb,var(--sea-2) 22%,transparent)}
+.ghint{display:block;font-size:0.9rem;font-weight:600;color:var(--muted);margin-top:7px;line-height:1.6}
+.ghint:empty{display:none}
+.gmode{display:block;width:100%;margin-top:10px;padding:11px 14px;border-radius:12px;border:1.6px dashed var(--line);
+  background:transparent;color:var(--sea-2);font-family:var(--body);font-size:0.95rem;font-weight:700;cursor:pointer}
+.gmode:hover{border-color:var(--sea-2)}
+#btnLogout{margin-inline-start:8px}
 .gcard .gerr{display:block;min-height:19px;font-size:0.875rem;color:var(--coral);text-align:right;margin:-6px 0 8px}
 .ggo{width:100%;padding:15px 20px;border-radius:14px;background:var(--sea);color:var(--sea-ink);
   font-family:var(--display);font-size:1.12rem;display:flex;align-items:center;justify-content:center;gap:10px;
@@ -1053,6 +1062,11 @@ html{scrollbar-gutter:stable}  /* مساحة شريط التمرير محجوز�
   box-shadow:var(--shadow-lg);z-index:80;opacity:0;transform:translateY(16px);pointer-events:none;
   transition:opacity .3s ease,transform .3s ease}
 .toast.on{opacity:1;transform:none}
+/* شريط المزامنة */
+.syncbar{position:fixed;inset:auto 12px 78px 12px;margin-inline:auto;max-width:560px;background:#7A2E12;color:#fff;
+  padding:10px 16px;border-radius:14px;font-size:15px;font-weight:700;line-height:1.6;z-index:79;text-align:center;box-shadow:var(--shadow-lg)}
+.syncbar[hidden]{display:none}
+@media print{.syncbar{display:none!important}}
 </style>
 <style>
 
@@ -1307,8 +1321,21 @@ html{scrollbar-gutter:stable}  /* مساحة شريط التمرير محجوز�
       <label for="gClass">الصف والشعبة <span style="opacity:.7">(اختياري)</span><span class="en inl">Class and section (optional)</span></label>
       <input id="gClass" type="text" maxlength="24" placeholder="مثال: 7/3" enterkeyhint="go">
     </div>
+    <div class="gfield" id="gfClassSel" hidden>
+      <label for="gClassSel">الشعبة<span class="en inl">Class</span></label>
+      <select id="gClassSel" class="gsel"><option value="">اختر شعبتك · Choose your class</option></select>
+    </div>
+    <div class="gfield" id="gfPin" hidden>
+      <label for="gPin">رمزك الشخصي — أربعة أرقام<span class="en inl">Your 4-digit PIN</span></label>
+      <div class="tcrow">
+        <button class="tceye" id="gEye" type="button" aria-pressed="false" aria-label="إظهار الرمز"><svg viewBox="0 0 24 24"><path d="M2 12s3.8-6.5 10-6.5S22 12 22 12s-3.8 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.7"/></svg></button>
+        <input id="gPin" type="password" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="••••" enterkeyhint="go">
+      </div>
+      <span class="ghint" id="gHint"></span>
+    </div>
     <span class="gerr" id="gErr" role="alert"></span>
-    <button class="ggo" id="gGo" type="button"><svg viewBox="0 0 24 24"><path d="M10 7 5 12l5 5"/><path d="M5 12h14"/></svg>ادخل الرحلة · Enter</button>
+    <button class="ggo" id="gGo" type="button"><svg viewBox="0 0 24 24"><path d="M10 7 5 12l5 5"/><path d="M5 12h14"/></svg><span id="gGoTx">ادخل الرحلة · Enter</span></button>
+    <button class="gmode" id="gMode" type="button" hidden>طالب جديد؟ اختر رمزك وسجّل</button>
     <p class="gfoot">إعداد معلّم المادة / <b>محمود علام محمود</b><span class="en">Prepared by MR. Mahmoud Allam Mahmoud</span></p>
     <div class="qrpanel">
       <button class="qrbtn" id="qrBtn" type="button" title="اضغط لتكبير الباركود على شاشة الصف"><svg class="qrsvg" viewBox="0 0 39 39" role="img" aria-label="باركود يفتح صفحة الدرس" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="39" height="39" fill="#FFFFFF"/><path fill="#0F1A1C" d="M3 3h7v1h-7zM12 3h1v1h-1zM14 3h4v1h-4zM19 3h5v1h-5zM26 3h1v1h-1zM29 3h7v1h-7zM3 4h1v1h-1zM9 4h1v1h-1zM13 4h1v1h-1zM16 4h5v1h-5zM24 4h1v1h-1zM27 4h1v1h-1zM29 4h1v1h-1zM35 4h1v1h-1zM3 5h1v1h-1zM5 5h3v1h-3zM9 5h1v1h-1zM11 5h6v1h-6zM18 5h1v1h-1zM20 5h2v1h-2zM23 5h2v1h-2zM29 5h1v1h-1zM31 5h3v1h-3zM35 5h1v1h-1zM3 6h1v1h-1zM5 6h3v1h-3zM9 6h1v1h-1zM11 6h1v1h-1zM13 6h3v1h-3zM17 6h1v1h-1zM19 6h1v1h-1zM23 6h3v1h-3zM29 6h1v1h-1zM31 6h3v1h-3zM35 6h1v1h-1zM3 7h1v1h-1zM5 7h3v1h-3zM9 7h1v1h-1zM11 7h2v1h-2zM14 7h2v1h-2zM18 7h1v1h-1zM20 7h2v1h-2zM24 7h1v1h-1zM26 7h1v1h-1zM29 7h1v1h-1zM31 7h3v1h-3zM35 7h1v1h-1zM3 8h1v1h-1zM9 8h1v1h-1zM11 8h1v1h-1zM18 8h2v1h-2zM21 8h1v1h-1zM23 8h3v1h-3zM29 8h1v1h-1zM35 8h1v1h-1zM3 9h7v1h-7zM11 9h1v1h-1zM13 9h1v1h-1zM15 9h1v1h-1zM17 9h1v1h-1zM19 9h1v1h-1zM21 9h1v1h-1zM23 9h1v1h-1zM25 9h1v1h-1zM27 9h1v1h-1zM29 9h7v1h-7zM11 10h1v1h-1zM14 10h2v1h-2zM18 10h1v1h-1zM24 10h4v1h-4zM3 11h1v1h-1zM5 11h5v1h-5zM12 11h9v1h-9zM23 11h1v1h-1zM27 11h1v1h-1zM29 11h5v1h-5zM4 12h1v1h-1zM7 12h2v1h-2zM11 12h2v1h-2zM14 12h2v1h-2zM18 12h2v1h-2zM21 12h4v1h-4zM26 12h1v1h-1zM29 12h2v1h-2zM32 12h4v1h-4zM3 13h1v1h-1zM5 13h1v1h-1zM9 13h1v1h-1zM12 13h2v1h-2zM15 13h1v1h-1zM18 13h2v1h-2zM21 13h1v1h-1zM25 13h1v1h-1zM29 13h1v1h-1zM31 13h1v1h-1zM33 13h1v1h-1zM3 14h3v1h-3zM7 14h1v1h-1zM10 14h4v1h-4zM15 14h1v1h-1zM17 14h1v1h-1zM19 14h1v1h-1zM22 14h1v1h-1zM24 14h1v1h-1zM28 14h2v1h-2zM31 14h3v1h-3zM35 14h1v1h-1zM3 15h4v1h-4zM9 15h3v1h-3zM14 15h1v1h-1zM18 15h1v1h-1zM21 15h1v1h-1zM25 15h1v1h-1zM27 15h2v1h-2zM30 15h1v1h-1zM32 15h1v1h-1zM34 15h1v1h-1zM3 16h1v1h-1zM6 16h1v1h-1zM8 16h1v1h-1zM10 16h1v1h-1zM15 16h1v1h-1zM17 16h3v1h-3zM23 16h1v1h-1zM32 16h4v1h-4zM4 17h1v1h-1zM6 17h2v1h-2zM9 17h3v1h-3zM16 17h2v1h-2zM20 17h1v1h-1zM22 17h1v1h-1zM25 17h1v1h-1zM27 17h5v1h-5zM33 17h2v1h-2zM4 18h3v1h-3zM11 18h1v1h-1zM14 18h2v1h-2zM19 18h1v1h-1zM21 18h4v1h-4zM26 18h1v1h-1zM28 18h2v1h-2zM32 18h2v1h-2zM6 19h2v1h-2zM9 19h1v1h-1zM11 19h3v1h-3zM15 19h3v1h-3zM19 19h2v1h-2zM22 19h2v1h-2zM25 19h1v1h-1zM28 19h1v1h-1zM30 19h3v1h-3zM35 19h1v1h-1zM6 20h3v1h-3zM10 20h1v1h-1zM14 20h2v1h-2zM17 20h1v1h-1zM20 20h5v1h-5zM26 20h1v1h-1zM29 20h2v1h-2zM32 20h2v1h-2zM35 20h1v1h-1zM3 21h3v1h-3zM7 21h3v1h-3zM11 21h3v1h-3zM16 21h1v1h-1zM18 21h3v1h-3zM23 21h3v1h-3zM29 21h3v1h-3zM33 21h2v1h-2zM3 22h2v1h-2zM7 22h2v1h-2zM10 22h1v1h-1zM14 22h4v1h-4zM19 22h3v1h-3zM24 22h2v1h-2zM27 22h1v1h-1zM30 22h4v1h-4zM35 22h1v1h-1zM4 23h2v1h-2zM8 23h2v1h-2zM11 23h1v1h-1zM13 23h1v1h-1zM15 23h1v1h-1zM17 23h1v1h-1zM19 23h1v1h-1zM24 23h2v1h-2zM27 23h2v1h-2zM30 23h1v1h-1zM32 23h1v1h-1zM35 23h1v1h-1zM3 24h2v1h-2zM6 24h1v1h-1zM10 24h2v1h-2zM13 24h3v1h-3zM17 24h2v1h-2zM21 24h1v1h-1zM24 24h1v1h-1zM33 24h1v1h-1zM35 24h1v1h-1zM3 25h1v1h-1zM5 25h1v1h-1zM8 25h2v1h-2zM11 25h1v1h-1zM14 25h6v1h-6zM21 25h1v1h-1zM24 25h1v1h-1zM32 25h3v1h-3zM3 26h1v1h-1zM6 26h2v1h-2zM11 26h3v1h-3zM18 26h1v1h-1zM24 26h2v1h-2zM28 26h7v1h-7zM3 27h1v1h-1zM5 27h2v1h-2zM9 27h1v1h-1zM11 27h1v1h-1zM15 27h2v1h-2zM18 27h1v1h-1zM20 27h1v1h-1zM25 27h1v1h-1zM27 27h5v1h-5zM33 27h1v1h-1zM11 28h1v1h-1zM13 28h2v1h-2zM17 28h1v1h-1zM21 28h3v1h-3zM27 28h1v1h-1zM31 28h1v1h-1zM33 28h2v1h-2zM3 29h7v1h-7zM15 29h1v1h-1zM17 29h2v1h-2zM21 29h1v1h-1zM23 29h1v1h-1zM25 29h3v1h-3zM29 29h1v1h-1zM31 29h1v1h-1zM33 29h2v1h-2zM3 30h1v1h-1zM9 30h1v1h-1zM11 30h2v1h-2zM14 30h2v1h-2zM18 30h2v1h-2zM22 30h3v1h-3zM26 30h2v1h-2zM31 30h3v1h-3zM35 30h1v1h-1zM3 31h1v1h-1zM5 31h3v1h-3zM9 31h1v1h-1zM11 31h1v1h-1zM13 31h1v1h-1zM15 31h2v1h-2zM18 31h1v1h-1zM21 31h2v1h-2zM24 31h2v1h-2zM27 31h6v1h-6zM3 32h1v1h-1zM5 32h3v1h-3zM9 32h1v1h-1zM11 32h3v1h-3zM15 32h1v1h-1zM17 32h3v1h-3zM25 32h1v1h-1zM27 32h2v1h-2zM31 32h5v1h-5zM3 33h1v1h-1zM5 33h3v1h-3zM9 33h1v1h-1zM11 33h1v1h-1zM13 33h2v1h-2zM20 33h2v1h-2zM23 33h2v1h-2zM26 33h1v1h-1zM29 33h2v1h-2zM3 34h1v1h-1zM9 34h1v1h-1zM14 34h1v1h-1zM16 34h2v1h-2zM19 34h1v1h-1zM24 34h2v1h-2zM27 34h2v1h-2zM31 34h1v1h-1zM33 34h1v1h-1zM3 35h7v1h-7zM11 35h2v1h-2zM14 35h1v1h-1zM16 35h1v1h-1zM19 35h2v1h-2zM22 35h1v1h-1zM26 35h3v1h-3zM30 35h1v1h-1zM32 35h1v1h-1zM34 35h1v1h-1z"/></svg></button>
@@ -1428,7 +1455,7 @@ html{scrollbar-gutter:stable}  /* مساحة شريط التمرير محجوز�
     <div class="hero-art"></div>
     <div class="wrap">
       <div class="hero-txt">
-      <p class="hiyou" id="hiyou" hidden><span>أهلاً بك يا <b id="hiName"></b></span><button type="button" id="hiEdit">تغيير الاسم</button></p>
+      <p class="hiyou" id="hiyou" hidden><span>أهلاً بك يا <b id="hiName"></b></span><button type="button" id="hiEdit">تغيير الاسم</button><button type="button" id="btnLogout" hidden>خروج<span class="en inl">Sign out</span></button></p>
       <p class="eyebrow">دراسات اجتماعية · التراث الوطني</p>
       <p class="teacher"><img class="tlogo" src="img/logo-school.png" alt="أكاديمية رأس الخيمة · RAK Academy" title="أكاديمية رأس الخيمة · RAK Academy">إعداد معلّم المادة / <b>محمود علام محمود</b><span class="en">Prepared by MR. Mahmoud Allam Mahmoud</span></p>
       <h1 class="oneline"><span class="t1">التراث والثقافة الإماراتية</span><i class="sep">·</i><span class="t2">رأس الخيمة</span><i class="sep">·</i><span class="t3">الجزيرة الحمراء</span></h1>
@@ -2053,17 +2080,634 @@ html{scrollbar-gutter:stable}  /* مساحة شريط التمرير محجوز�
   <span>إعداد معلّم المادة / <b>محمود علام محمود</b><span class="en">Prepared by MR. Mahmoud Allam Mahmoud</span></span>
 </div></footer>
 <div class="toast" id="toast"></div>
+<div class="syncbar" id="syncBar" role="status" hidden></div>
 </div>
 <script>
 (function(){
 "use strict";
 var $=function(s,r){return (r||document).querySelector(s)};
 var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
-var STORE="jzh.v1";
+/*SYNC:BEGIN*/
+/* ---------------- المزامنة: دوال صافية بلا DOM ---------------- */
+var SYNC_UNION = [
+  "visited",
+  "done",
+  "badge",
+  "ch",
+  "pl",
+  "lf",
+  "tl",
+  "eye",
+]; /* إنجازات: لا تُلغى */
+var SYNC_LWW = ["notes", "crit", "watch"]; /* نصوص ومفاتيح: الأحدث يفوز */
+var SYNC_SET = ["vis", "en", "hub", "pres", "ask", "res"]; /* إعدادات المعلّم */
+var SYNC_TRACKS = ["lap", "map", "hap"];
+function syncObj(x) {
+  return x && typeof x === "object" && !Array.isArray(x) ? x : {};
+}
+function syncStable(v) {
+  if (v === null || v === undefined || typeof v !== "object")
+    return JSON.stringify(v === undefined ? null : v);
+  if (Array.isArray(v)) return "[" + v.map(syncStable).join(",") + "]";
+  return (
+    "{" +
+    Object.keys(v)
+      .sort()
+      .filter(function (k) {
+        return v[k] !== undefined;
+      })
+      .map(function (k) {
+        return JSON.stringify(k) + ":" + syncStable(v[k]);
+      })
+      .join(",") +
+    "}"
+  );
+}
+function pickMain(st) {
+  var o = {};
+  SYNC_UNION.concat(SYNC_LWW).forEach(function (k) {
+    o[k] = syncObj(st && st[k]);
+  });
+  return o;
+}
+function pickQuiz(q) {
+  if (!q || typeof q !== "object" || !q.S || typeof q.S !== "object")
+    return null;
+  return {
+    S: q.S,
+    B: syncObj(q.B),
+    P: syncObj(q.P),
+    PI: syncObj(q.PI),
+    AI: syncObj(q.AI),
+  };
+}
+function trackStat(q, tk) {
+  var n = 0,
+    v = 0,
+    p = 0,
+    t = q && q.S && q.S[tk];
+  if (t)
+    Object.keys(t).forEach(function (k) {
+      (Array.isArray(t[k]) ? t[k] : []).forEach(function (it) {
+        n++;
+        if (it && it.ver) v++;
+        p += (it && +it.pts) || 0;
+      });
+    });
+  return { n: n, ver: v, pts: p, done: n > 0 && v >= n };
+}
+/* يختم بالوقت كل مفتاح تغيّر بين لقطتين، ويعيد اللقطة الجديدة مع أختامها في _t */
+function stampChanges(prev, next, now) {
+  var t = Object.assign({}, syncObj(prev && prev._t), syncObj(next && next._t));
+  var pm = syncObj(prev && prev.main),
+    nm = syncObj(next && next.main);
+  SYNC_UNION.concat(SYNC_LWW).forEach(function (k) {
+    var a = syncObj(pm[k]),
+      b = syncObj(nm[k]);
+    Object.keys(Object.assign({}, a, b)).forEach(function (key) {
+      if (syncStable(a[key]) !== syncStable(b[key]))
+        t["main." + k + "." + key] = now;
+    });
+  });
+  var pq = syncObj(prev && prev.quiz && prev.quiz.S),
+    nq = syncObj(next && next.quiz && next.quiz.S);
+  SYNC_TRACKS.forEach(function (tk) {
+    if (syncStable(pq[tk]) !== syncStable(nq[tk])) t["quiz." + tk] = now;
+  });
+  return { main: next && next.main, quiz: next && next.quiz, _t: t };
+}
+function mergeMain(l, s) {
+  var lm = syncObj(l && l.main),
+    sm = syncObj(s && s.main),
+    lt = syncObj(l && l._t),
+    st = syncObj(s && s._t),
+    out = {};
+  SYNC_UNION.forEach(function (k) {
+    var a = syncObj(lm[k]),
+      b = syncObj(sm[k]),
+      o = {};
+    Object.keys(Object.assign({}, a, b)).forEach(function (key) {
+      o[key] = a[key] ? a[key] : b[key] ? b[key] : key in a ? a[key] : b[key];
+    });
+    out[k] = o;
+  });
+  SYNC_LWW.forEach(function (k) {
+    var a = syncObj(lm[k]),
+      b = syncObj(sm[k]),
+      o = {};
+    Object.keys(Object.assign({}, a, b)).forEach(function (key) {
+      if (!(key in b)) o[key] = a[key];
+      else if (!(key in a)) o[key] = b[key];
+      else
+        o[key] =
+          (st["main." + k + "." + key] || 0) >
+          (lt["main." + k + "." + key] || 0)
+            ? b[key]
+            : a[key];
+    });
+    out[k] = o;
+  });
+  return out;
+}
+/* التقويم يُدمج مساراً مساراً: المسار المُسلَّم كاملاً لا يُستبدل بغير المُسلَّم */
+function mergeQuiz(l, s) {
+  var a = pickQuiz(l && l.quiz),
+    b = pickQuiz(s && s.quiz);
+  if (!a) return b;
+  if (!b) return a;
+  var lt = syncObj(l._t),
+    st = syncObj(s._t),
+    out = { S: {}, B: {}, P: {}, PI: {}, AI: {} };
+  SYNC_TRACKS.forEach(function (tk) {
+    var x = trackStat(a, tk),
+      y = trackStat(b, tk),
+      useB;
+    if (x.done !== y.done) useB = y.done;
+    else {
+      var ta = lt["quiz." + tk] || 0,
+        tb = st["quiz." + tk] || 0;
+      useB = tb !== ta ? tb > ta : y.ver > x.ver;
+    }
+    var src = useB ? b : a,
+      alt = useB ? a : b;
+    if (src.S[tk] === undefined) {
+      src = alt;
+    }
+    ["S", "B", "P", "PI"].forEach(function (f) {
+      if (src[f][tk] !== undefined) out[f][tk] = src[f][tk];
+    });
+    Object.keys(src.AI).forEach(function (key) {
+      if (key.indexOf(tk + "-") === 0) out.AI[key] = src.AI[key];
+    });
+  });
+  return out;
+}
+function mergeDoc(l, s) {
+  var t = Object.assign({}, syncObj(l && l._t));
+  Object.keys(syncObj(s && s._t)).forEach(function (k) {
+    if ((s._t[k] || 0) > (t[k] || 0)) t[k] = s._t[k];
+  });
+  return { main: mergeMain(l, s), quiz: mergeQuiz(l, s), _t: t };
+}
+function summarize(main, quiz, liveIds) {
+  var vis = syncObj(main && main.visited),
+    q = pickQuiz(quiz),
+    best = null,
+    bs = null,
+    sub = false;
+  SYNC_TRACKS.forEach(function (tk) {
+    var s = trackStat(q, tk);
+    if (s.done) sub = true;
+    if (
+      s.ver > 0 &&
+      (!bs || (s.done && !bs.done) || (s.done === bs.done && s.ver > bs.ver))
+    ) {
+      best = tk;
+      bs = s;
+    }
+  });
+  return {
+    visited: Math.min(
+      100,
+      (liveIds || []).filter(function (id) {
+        return vis[id];
+      }).length,
+    ),
+    quizTrack: best,
+    quizScore: bs && bs.n ? Math.round((bs.pts / bs.n) * 100) : null,
+    submitted: sub,
+  };
+}
+/*SYNC:END*/
+
+/* ---------------- المزامنة: الشبكة والتخزين المحلي ---------------- */
+var SYNC = (function () {
+  function rd(k) {
+    if (!k) return null;
+    try {
+      var r = localStorage.getItem(k);
+      return r ? JSON.parse(r) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+  function wr(k, v) {
+    if (!k) return;
+    try {
+      if (v === null) localStorage.removeItem(k);
+      else localStorage.setItem(k, JSON.stringify(v));
+    } catch (e) {}
+  }
+  function keysFor(sid) {
+    return {
+      main: "jzh.v1." + sid,
+      quiz: "jzh.quiz.v1." + sid,
+      meta: "jzh.sync." + sid,
+    };
+  }
+  var who = rd("jzh.who");
+  if (!who || typeof who.sid !== "string" || !who.sid) who = null;
+  var K = who
+    ? keysFor(who.sid)
+    : { main: "jzh.v1", quiz: "jzh.quiz.v1", meta: null };
+  var meta = who ? rd(K.meta) || {} : null;
+  if (meta) {
+    meta.version = meta.version | 0;
+    meta.epoch = meta.epoch | 0;
+    meta.t = syncObj(meta.t);
+  }
+  var hooks = {
+    toast: function () {},
+    needLogin: function () {},
+    onCert: function () {},
+    liveIds: function () {
+      return [];
+    },
+  };
+  var api0 = typeof fetch === "function";
+  var timer = null,
+    busy = false,
+    again = false,
+    delay = 15000,
+    retryT = null,
+    blocked = false;
+  var X = { keys: K, who: who, frozen: false };
+
+  function saveMeta() {
+    if (meta) wr(K.meta, meta);
+  }
+  function api(method, path, body, keep) {
+    if (!api0) return Promise.reject(new Error("no fetch"));
+    var o = { method: method, credentials: "same-origin", headers: {} };
+    if (body !== undefined) {
+      o.headers["Content-Type"] = "application/json";
+      o.body = JSON.stringify(body);
+    }
+    if (keep) o.keepalive = true;
+    return fetch("/api/s/" + path, o).then(function (r) {
+      return r.text().then(function (t) {
+        var j = null;
+        try {
+          j = t ? JSON.parse(t) : null;
+        } catch (e) {}
+        return { status: r.status, json: j };
+      });
+    });
+  }
+  function bar(msg) {
+    var b = document.getElementById("syncBar");
+    if (!b) return;
+    if (msg) {
+      b.textContent = msg;
+      b.hidden = false;
+    } else b.hidden = true;
+  }
+  function raw() {
+    return { main: pickMain(rd(K.main)), quiz: pickQuiz(rd(K.quiz)) };
+  }
+  function current() {
+    var d = stampChanges(
+      meta.seen
+        ? { main: meta.seen.main, quiz: meta.seen.quiz, _t: meta.t }
+        : { _t: meta.t },
+      raw(),
+      Date.now(),
+    );
+    meta.t = d._t;
+    meta.seen = { main: d.main, quiz: d.quiz };
+    saveMeta();
+    return d;
+  }
+  function serverDoc(state) {
+    var s = syncObj(state);
+    return {
+      main: pickMain(s.main),
+      quiz: pickQuiz(s.quiz),
+      _t: syncObj(s._t),
+    };
+  }
+  function same(a, b) {
+    return (
+      syncStable({ m: a.main, q: a.quiz }) ===
+      syncStable({ m: b.main, q: b.quiz })
+    );
+  }
+
+  /* يكتب نسخة كاملة في مفاتيح الطالب ويعيد التحميل؛ يُجمَّد الحفظ أولاً كي لا تكتب المحرّكات فوقها عند الإغلاق */
+  function install(keys, doc, m) {
+    wr(keys.main, Object.assign({}, rd(keys.main) || {}, pickMain(doc.main)));
+    var q = pickQuiz(doc.quiz);
+    if (q) wr(keys.quiz, Object.assign({}, rd(keys.quiz) || {}, q));
+    else wr(keys.quiz, null);
+    m.seen = { main: pickMain(doc.main), quiz: q };
+    m.t = syncObj(doc._t);
+    wr(keys.meta, m);
+  }
+  function reloadWith(doc, msg) {
+    try {
+      var last = +sessionStorage.getItem("jzh.rl") || 0;
+      if (Date.now() - last < 8000) return false;
+      sessionStorage.setItem("jzh.rl", String(Date.now()));
+    } catch (e) {}
+    X.frozen = true;
+    clearTimeout(timer);
+    clearTimeout(retryT);
+    install(K, doc, meta);
+    if (msg) hooks.toast(msg);
+    setTimeout(
+      function () {
+        location.reload();
+      },
+      msg ? 900 : 0,
+    );
+    return false;
+  }
+  function adopt(sd, version, epoch, msg) {
+    meta.version = version;
+    meta.epoch = epoch;
+    return reloadWith(sd, msg);
+  }
+  function fail() {
+    bar(
+      "لم يُحفظ على الخادم بعد — سنحاول تلقائياً · Not saved to the server yet",
+    );
+    clearTimeout(retryT);
+    retryT = setTimeout(function () {
+      push();
+    }, delay);
+    delay = Math.min(delay * 2, 120000);
+  }
+  function setCert(v) {
+    if (!meta) return;
+    v = !!v;
+    if (meta.cert !== v) {
+      meta.cert = v;
+      saveMeta();
+    }
+    hooks.onCert(v);
+  }
+  function conflict(j, localDoc) {
+    var sv = j.server,
+      sd = serverDoc(sv.state);
+    if (j.error === "epoch")
+      return adopt(
+        sd,
+        sv.version,
+        sv.epoch,
+        "أعاد معلّمك ضبط تقدّمك — نبدأ من جديد",
+      );
+    var m = mergeDoc(localDoc, sd);
+    meta.version = sv.version;
+    saveMeta();
+    if (same(m, localDoc)) return push();
+    return reloadWith(m, "وصل تقدّم من جهاز آخر — نحدّث الصفحة");
+  }
+  function push(keep) {
+    if (!who || blocked || X.frozen) return Promise.resolve(false);
+    if (busy) {
+      again = true;
+      return new Promise(function (res) {
+        setTimeout(function () {
+          res(push(keep));
+        }, 300);
+      });
+    }
+    busy = true;
+    clearTimeout(timer);
+    var d = current();
+    var req = {
+      state: { main: d.main, quiz: d.quiz, _t: d._t },
+      summary: summarize(d.main, d.quiz, hooks.liveIds()),
+      baseVersion: meta.version,
+      epoch: meta.epoch,
+    };
+    return api("PUT", "sync", req, keep)
+      .then(function (r) {
+        busy = false;
+        if (r.status === 200 && r.json) {
+          meta.version = r.json.version;
+          saveMeta();
+          delay = 15000;
+          clearTimeout(retryT);
+          bar("");
+          if (again) {
+            again = false;
+            dirty();
+          }
+          return true;
+        }
+        if (r.status === 409 && r.json && r.json.server)
+          return conflict(r.json, d);
+        if (r.status === 401) {
+          blocked = true;
+          hooks.needLogin(who);
+          return false;
+        }
+        throw new Error("http " + r.status);
+      })
+      .catch(function () {
+        busy = false;
+        fail();
+        return false;
+      });
+  }
+  function dirty() {
+    if (!who || blocked || X.frozen) return;
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      push();
+    }, 2000);
+  }
+  function pull() {
+    return api("GET", "sync")
+      .then(function (r) {
+        if (r.status === 401) {
+          blocked = true;
+          hooks.needLogin(who);
+          return;
+        }
+        if (r.status !== 200 || !r.json) throw new Error("http " + r.status);
+        var j = r.json,
+          sd = serverDoc(j.state);
+        setCert(j.cert && j.cert.approved);
+        var setChanged =
+          syncStable(syncObj(j.settings)) !==
+          syncStable(syncObj(meta.settings));
+        meta.settings = syncObj(j.settings);
+        if (j.epoch !== meta.epoch) return adopt(sd, j.version, j.epoch, null);
+        var ld = current(),
+          m = mergeDoc(ld, sd);
+        meta.version = j.version;
+        saveMeta();
+        if (!same(m, ld) || setChanged) return reloadWith(m, null);
+        if (!same(m, sd)) return push();
+      })
+      .catch(function () {
+        fail();
+      });
+  }
+  function guestSettings() {
+    return api("GET", "settings")
+      .then(function (r) {
+        if (r.status !== 200 || !r.json) return;
+        var c = syncObj(r.json.config),
+          old = syncObj(rd("jzh.gset"));
+        if (syncStable(c) === syncStable(old)) return;
+        wr("jzh.gset", c);
+        try {
+          var last = +sessionStorage.getItem("jzh.rl") || 0;
+          if (Date.now() - last < 8000) return;
+          sessionStorage.setItem("jzh.rl", String(Date.now()));
+        } catch (e) {}
+        location.reload();
+      })
+      .catch(function () {});
+  }
+
+  X.dirty = dirty;
+  X.push = push;
+  X.certApproved = function () {
+    return !!(meta && meta.cert);
+  };
+  X.applySettings = function (state) {
+    var c = who ? syncObj(meta.settings) : syncObj(rd("jzh.gset"));
+    SYNC_SET.forEach(function (k) {
+      if (k in c) state[k] = c[k];
+    });
+  };
+  X.start = function (h) {
+    Object.keys(h || {}).forEach(function (k) {
+      hooks[k] = h[k];
+    });
+    if (!who) {
+      guestSettings();
+      return;
+    }
+    hooks.onCert(X.certApproved());
+    pull();
+    setInterval(function () {
+      if (document.hidden || blocked || X.frozen) return;
+      api("GET", "sync")
+        .then(function (r) {
+          if (r.status === 401) {
+            blocked = true;
+            hooks.needLogin(who);
+            return;
+          }
+          if (r.status !== 200 || !r.json) return;
+          setCert(r.json.cert && r.json.cert.approved);
+          if (r.json.epoch !== meta.epoch)
+            adopt(
+              serverDoc(r.json.state),
+              r.json.version,
+              r.json.epoch,
+              "أعاد معلّمك ضبط تقدّمك — نبدأ من جديد",
+            );
+        })
+        .catch(function () {});
+    }, 60000);
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden && timer) {
+        push(true);
+      }
+    });
+    window.addEventListener("pagehide", function () {
+      if (timer) push(true);
+    });
+  };
+  X.classes = function () {
+    return api("GET", "settings").then(function (r) {
+      if (r.status !== 200 || !r.json || !Array.isArray(r.json.classes))
+        throw new Error("http " + r.status);
+      return r.json.classes;
+    });
+  };
+  /* mode: "login" | "register" */
+  X.signIn = function (mode, name, cls, pin) {
+    return api("POST", mode, { name: name, cls: cls, pin: pin })
+      .then(function (r) {
+        if (
+          (r.status !== 200 && r.status !== 201) ||
+          !r.json ||
+          !r.json.student
+        )
+          return { ok: false, status: r.status, json: r.json };
+        var j = r.json,
+          s = j.student,
+          p = j.progress || {},
+          nk = keysFor(s.id);
+        var sd = serverDoc(p.state),
+          doc = sd,
+          om = rd(nk.meta);
+        /* عمل سابق لهذا الطالب على هذا الجهاز (دون اتصال) يُدمج ولا يضيع */
+        if (om && rd(nk.main) && (om.epoch | 0) === (p.epoch | 0)) {
+          var ld = stampChanges(
+            om.seen
+              ? { main: om.seen.main, quiz: om.seen.quiz, _t: om.t }
+              : { _t: om.t },
+            { main: pickMain(rd(nk.main)), quiz: pickQuiz(rd(nk.quiz)) },
+            Date.now(),
+          );
+          doc = mergeDoc(ld, sd);
+        }
+        install(nk, doc, {
+          version: p.version | 0,
+          epoch: p.epoch | 0,
+          settings: syncObj(j.settings),
+          cert: !!(j.cert && j.cert.approved),
+        });
+        wr("jzh.who", { sid: s.id, name: s.name, cls: s.cls });
+        X.frozen = true;
+        return { ok: true, student: s };
+      })
+      .catch(function () {
+        return { ok: false, status: 0, json: null };
+      });
+  };
+  X.logout = function (force) {
+    if (!who) return Promise.resolve(true);
+    return push().then(function (ok) {
+      if (ok !== true && !force) return false;
+      X.frozen = true;
+      clearTimeout(timer);
+      clearTimeout(retryT);
+      [K.main, K.quiz, K.meta].forEach(function (k) {
+        wr(k, null);
+      });
+      wr("jzh.who", null);
+      return api("POST", "logout")
+        .catch(function () {})
+        .then(function () {
+          return true;
+        });
+    });
+  };
+  X.resetMine = function () {
+    if (!who) return Promise.resolve(true);
+    return api("POST", "reset")
+      .then(function (r) {
+        if (r.status !== 200 || !r.json) return false;
+        meta.version = r.json.version | 0;
+        meta.epoch = r.json.epoch | 0;
+        meta.seen = null;
+        meta.t = {};
+        saveMeta();
+        return true;
+      })
+      .catch(function () {
+        return false;
+      });
+  };
+  window.__JZH_SYNC = X;
+  return X;
+})();
+var STORE=SYNC.keys.main;
 var state={visited:{},notes:{},watch:{},done:{},crit:{},en:1,tl:{},ch:{},pl:{},lf:{},eye:{},badge:{},pres:0,res:null,hub:"",vis:{},ask:1,tpin:null,ttab:"vis",enset:0};
 try{var raw=localStorage.getItem(STORE); if(raw) state=Object.assign(state,JSON.parse(raw));}catch(e){}
 if(!state.enset){ state.en=0; state.enset=1; }   /* الترجمة مغلقة افتراضياً — يفتحها المعلّم */
-function save(){try{localStorage.setItem(STORE,JSON.stringify(state))}catch(e){}}
+SYNC.applySettings(state);                         /* إعدادات المعلّم المنشورة تسري على هذا الجهاز */
+if(SYNC.who){ state.notes.certName=SYNC.who.name; state.notes.certClass=SYNC.who.cls; }
+function save(){ if(SYNC.frozen) return; try{localStorage.setItem(STORE,JSON.stringify(state))}catch(e){} SYNC.dirty() }
 
 var SECTIONS=[
  {id:"story",  name:"حكاية المكان"},
@@ -2157,13 +2801,45 @@ function paintHi(){
   box.hidden=!n;
   if(n) $("#hiName").textContent=n;
 }
-function openGate(){
+/* وضع الخادم: اسم + شعبة + رمز. إن تعذّر الخادم يبقى الدخول القديم (ضيف على هذا الجهاز) */
+var GATE={server:null, mode:"login", loading:null};
+function toAscii(x){ return String(x||"").replace(/[\u0660-\u0669]/g,function(d){return String(d.charCodeAt(0)-0x660)})
+  .replace(/[\u06F0-\u06F9]/g,function(d){return String(d.charCodeAt(0)-0x6F0)}).replace(/\s+/g,"") }
+function gateMode(m){
+  GATE.mode=m;
+  var srv=GATE.server===true;
+  $("#gfClass").hidden=srv; $("#gfClassSel").hidden=!srv; $("#gfPin").hidden=!srv; $("#gMode").hidden=!srv||!!SYNC.who;
+  $("#gGoTx").textContent = srv&&m==="register" ? "سجّل وادخل · Register" : "ادخل الرحلة · Enter";
+  $("#gMode").textContent = m==="register" ? "لديك رمز؟ ادخل به · I have a PIN" : "طالب جديد؟ اختر رمزك وسجّل · New student";
+  $("#gHint").textContent = srv&&m==="register" ? "اختر أربعة أرقام تتذكّرها، واحفظها — ستحتاجها للدخول من أي جهاز." : "";
+}
+function loadGate(){
+  if(GATE.loading) return GATE.loading;
+  GATE.loading=SYNC.classes().then(function(list){
+    $("#gClassSel").innerHTML='<option value="">اختر شعبتك · Choose your class</option>'+
+      list.map(function(c){ return '<option value="'+esc(c.code)+'">'+esc(c.label||c.code)+'</option>' }).join("");
+    GATE.server=list.length>0;
+  },function(){ GATE.server=false }).then(function(){ gateMode(GATE.mode) });
+  return GATE.loading;
+}
+function openGate(reason){
   var g=$("#gate"); if(!g) return;
   g.classList.remove("out"); g.hidden=false;
-  $("#gName").value=stuName();
+  var w=SYNC.who;
+  $("#gName").value= w ? w.name : stuName();
   $("#gClass").value=state.notes.certClass||"";
-  $("#gErr").textContent="";
-  setTimeout(function(){ try{$("#gName").focus()}catch(e){} },120);
+  $("#gPin").value="";
+  $("#gErr").textContent= reason==="expired" ? "انتهت جلستك — أدخل رمزك للمتابعة · Your session ended, enter your PIN" : "";
+  gateMode("login");
+  loadGate().then(function(){ if(w&&GATE.server) $("#gClassSel").value=w.cls });
+  setTimeout(function(){ try{ (w?$("#gPin"):$("#gName")).focus() }catch(e){} },120);
+}
+function gateMsg(r){
+  if(r.status===401) return "الاسم أو الرمز غير صحيح · Wrong name or PIN";
+  if(r.status===429) return "محاولات كثيرة — حاول بعد "+Math.max(1,Math.ceil(((r.json&&r.json.retryAfterSec)||60)/60))+" دقيقة · Too many tries";
+  if(r.status===409) return "هذا الاسم مسجّل في هذه الشعبة — ادخل برمزك أو أضف حرفاً لاسمك";
+  if(r.status===400) return "تحقّق من الاسم والشعبة والرمز (أربعة أرقام)";
+  return "تعذّر الاتصال — يمكنك المتابعة كضيف على هذا الجهاز · Offline: continue as a guest";
 }
 function closeGate(greet){
   var g=$("#gate"); if(!g) return;
@@ -2181,6 +2857,20 @@ function enterGate(){
   var v=$("#gName").value.trim().replace(/\s+/g," ");
   if(v.length<2){ $("#gErr").textContent="اكتب اسمك أولاً من فضلك · Please write your name first";
     $("#gName").focus(); return; }
+  if(GATE.server===true){
+    var cls=$("#gClassSel").value, pin=toAscii($("#gPin").value);
+    if(!cls){ $("#gErr").textContent="اختر شعبتك · Choose your class"; $("#gClassSel").focus(); return }
+    if(!/^\d{4}$/.test(pin)){ $("#gErr").textContent="الرمز أربعة أرقام · The PIN is four digits"; $("#gPin").focus(); return }
+    var b=$("#gGo"); b.disabled=true; $("#gErr").textContent="";
+    SYNC.signIn(GATE.mode,v,cls,pin).then(function(r){
+      b.disabled=false;
+      if(r.ok){ try{sessionStorage.setItem("jzh.hi","1")}catch(e){} location.hash=""; location.reload(); return }
+      $("#gErr").textContent=gateMsg(r);
+      if(r.status===401){ $("#gPin").value=""; $("#gPin").focus() }
+      if(r.status===0||r.status>=500){ GATE.server=false; gateMode("login") }
+    });
+    return;
+  }
   var first=!stuName();
   state.notes.certName=v;
   state.notes.certClass=$("#gClass").value.trim();
@@ -2211,10 +2901,28 @@ function enterGate(){
   $("#qrCopy").addEventListener("click",function(){ copyText($("#qrUrl").textContent.trim(),"نُسخ رابط الصفحة") });
 })();
 $("#gGo").addEventListener("click",enterGate);
-["gName","gClass"].forEach(function(id){
+["gName","gClass","gPin"].forEach(function(id){
   $("#"+id).addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); enterGate() } });
 });
 $("#hiEdit").addEventListener("click",function(e){ e.stopPropagation(); openGate() });
+$("#gMode").addEventListener("click",function(){ gateMode(GATE.mode==="register"?"login":"register"); $("#gErr").textContent=""; $("#gPin").focus() });
+$("#gEye").addEventListener("click",function(){
+  var i=$("#gPin"), on=i.type==="password"; i.type=on?"text":"password"; this.setAttribute("aria-pressed",String(on)); i.focus();
+});
+(function(){
+  var b=$("#btnLogout"); if(!b||!SYNC.who) return;
+  b.hidden=false; $("#hiEdit").hidden=true;
+  b.addEventListener("click",function(e){
+    e.stopPropagation(); b.disabled=true;
+    SYNC.logout(b.dataset.c==="1").then(function(ok){
+      b.disabled=false;
+      if(ok){ location.hash=""; location.reload(); return }
+      b.dataset.c="1";
+      toast("لم تُحفظ بعض إجاباتك على الخادم — اضغط «خروج» مرة أخرى لحذفها من هذا الجهاز");
+    });
+  });
+})();
+try{ if(SYNC.who&&sessionStorage.getItem("jzh.hi")){ sessionStorage.removeItem("jzh.hi"); setTimeout(function(){closeGate(true)},60) } }catch(e){}
 $("#wel").addEventListener("click",function(){ this.classList.add("out");
   var w=this; setTimeout(function(){ w.hidden=true; w.classList.remove("out") },560) });
 paintHi();
@@ -2388,6 +3096,16 @@ $("#btnHome").addEventListener("click",function(){show("home")});
 $("#btnPrev").addEventListener("click",function(){goRel(-1)});
 $("#btnNext").addEventListener("click",function(){goRel(1)});
 $("#btnReset").addEventListener("click",function(){
+  if(SYNC.who){
+    SYNC.resetMine().then(function(ok){
+      if(!ok){ toast("إعادة الضبط تحتاج اتصالاً بالخادم — حاول بعد قليل"); return }
+      var keepV=state.vis, keepA=state.ask, keepR=state.res;
+      state={visited:{},notes:{certName:SYNC.who.name,certClass:SYNC.who.cls},watch:{},done:{},crit:{},en:0,enset:1,tl:{},ch:{},pl:{},lf:{},eye:{},badge:{},pres:0,res:keepR,hub:"",vis:keepV,ask:keepA,ttab:state.ttab};
+      save(); SYNC.frozen=true; try{ localStorage.removeItem(SYNC.keys.quiz) }catch(e){}
+      location.hash=""; location.reload();
+    });
+    return;
+  }
   var keepV=state.vis, keepA=state.ask, keepR=state.res;
   state={visited:{},notes:{},watch:{},done:{},crit:{},en:0,enset:1,tl:{},ch:{},pl:{},lf:{},eye:{},badge:{},pres:0,res:keepR,hub:"",vis:keepV,ask:keepA,tpin:state.tpin,ttab:state.ttab};
   save(); location.hash=""; location.reload();
@@ -3773,6 +4491,12 @@ if(h && (h==="home"||h==="teacher"||h==="cert"||SECTIONS.some(function(s){return
 $$(".view").forEach(function(v){ if(v.id==="v-harvest") v.addEventListener("transitionend",hvStat) });
 document.addEventListener("click",function(e){ if(e.target.closest('[data-go="harvest"]')||e.target.closest("#btnNext")||e.target.closest("#btnPrev")) setTimeout(hvStat,30) });
 hvStat();
+SYNC.start({
+  toast:toast,
+  liveIds:function(){ return liveSections().map(function(x){return x.id}) },
+  onCert:function(){ try{paintCertReq()}catch(e){} },
+  needLogin:function(){ try{openGate("expired")}catch(e){} }
+});
 })();
 </script>
 <script>
@@ -3801,7 +4525,7 @@ var LTR=["أ","ب","ج","د"];
 var SDEF=[{k:"mcq",n:"01",t:"الاختيار من متعدد"},{k:"tf",n:"02",t:"صح وخطأ"},
           {k:"sort",n:"03",t:"التصنيف والتوصيل"},{k:"img",n:"04",t:"اقرأ الصورة"},
           {k:"text",n:"05",t:"نصّ وأسئلته"},{k:"essay",n:"06",t:"المقالية"}];
-var STORE="jzh.quiz.v1";
+var STORE=(window.__JZH_SYNC&&window.__JZH_SYNC.keys.quiz)||"jzh.quiz.v1";
 var ACTIVE="map", S={}, PERM={}, PERMI={}, B={}, AI={}, snd=false;
 var POS=0, FLAT=[], TCUR=null, TSTART=0, TICK=null;
 
@@ -3836,7 +4560,9 @@ function shuffle(n){var a=[];for(var i=0;i<n;i++)a.push(i);
   for(var j=n-1;j>0;j--){var k=Math.floor(Math.random()*(j+1));var t=a[j];a[j]=a[k];a[k]=t}return a}
 function okPerm(p,n){ if(!Array.isArray(p)||p.length!==n) return false;
   var seen={}; for(var i=0;i<n;i++){var v=p[i]; if(typeof v!=="number"||v<0||v>=n||seen[v])return false; seen[v]=1} return true}
-function save(){ try{ localStorage.setItem(STORE,JSON.stringify({A:ACTIVE,S:S,B:B,snd:snd,P:PERM,PI:PERMI,AI:AI})) }catch(e){} }
+function save(){ var Y=window.__JZH_SYNC; if(Y&&Y.frozen) return;
+  try{ localStorage.setItem(STORE,JSON.stringify({A:ACTIVE,S:S,B:B,snd:snd,P:PERM,PI:PERMI,AI:AI})) }catch(e){}
+  try{ Y&&Y.dirty() }catch(e){} }
 function load(){
   var raw; try{ raw=localStorage.getItem(STORE) }catch(e){ return }
   if(!raw) return; var v; try{ v=JSON.parse(raw) }catch(e){ return }

@@ -151,3 +151,27 @@ VISIBLE_CONTROLS_JS = """
   return e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + (cls ? '.' + cls : '');
 })
 """
+
+
+def login_ui(page, name, cls="7/3", pin="1234", register=False):
+    """Sign in (or register) through the server-mode gate; returns after the reload."""
+    page.wait_for_selector("#gClassSel", state="visible", timeout=TMO)
+    page.fill("#gName", name)
+    page.select_option("#gClassSel", cls)
+    if register:
+        page.click("#gMode")
+    page.fill("#gPin", pin)
+    with page.expect_event("load", timeout=TMO):
+        page.click("#gGo")
+    page.wait_for_selector("#progTxt", state="attached", timeout=TMO)
+    page.wait_for_function("() => document.querySelector('#gate').hidden", timeout=TMO)
+    if page.locator("#wel:not([hidden])").count():
+        page.click("#wel", timeout=TMO)
+
+
+def who(page):
+    return page.evaluate("() => JSON.parse(localStorage.getItem('jzh.who') || 'null')")
+
+
+def keys(page):
+    return page.evaluate("() => Object.keys(localStorage).sort()")

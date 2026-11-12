@@ -265,3 +265,14 @@ test("wrong method is 405, unknown action is 404", async () => {
     404,
   );
 });
+
+test("a student can reset their own progress, which bumps the epoch", async () => {
+  const r = await reg({ name: "منى", cls: "7/3", pin: "1234" });
+  const summary = { visited: 1, quizTrack: null, quizScore: null, submitted: false };
+  await call(handler, { method: "PUT", action: "sync", cookie: r.cookie, body: { state: { main: { visited: { story: 1 } } }, summary, baseVersion: 0, epoch: 0 } });
+  assert.equal((await call(handler, { method: "POST", action: "reset" })).status, 401);
+  const x = await call(handler, { method: "POST", action: "reset", cookie: r.cookie });
+  assert.deepEqual([x.status, x.json], [200, { version: 0, epoch: 1 }]);
+  const g = await call(handler, { action: "sync", cookie: r.cookie });
+  assert.deepEqual([g.json.state, g.json.epoch], [{}, 1]);
+});

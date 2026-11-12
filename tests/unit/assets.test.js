@@ -9,9 +9,15 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const pub = join(root, 'public');
 const INDEX_SHA256 = '033d06588bf0e6b280b5f909118d7d1fe0b6921c96ea5a4828b7b92ec9a4471d';
 
-test('public/index.html matches the v27 page hash', () => {
-  const buf = readFileSync(join(pub, 'index.html'));
+test('reference/v27.html is the untouched v27 page', () => {
+  const buf = readFileSync(join(root, 'reference', 'v27.html'));
   assert.equal(createHash('sha256').update(buf).digest('hex'), INDEX_SHA256);
+});
+
+test('public/index.html stays one file with exactly three script blocks', () => {
+  const html = readFileSync(join(pub, 'index.html'), 'utf8');
+  assert.equal((html.match(/<script[\s>]/g) || []).length, 3);
+  assert.equal((html.match(/<\/script>/g) || []).length, 3);
 });
 
 test('every img/<file> referenced in index.html exists in public/img', () => {

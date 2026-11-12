@@ -62,3 +62,26 @@ def quiz_shape(browser, base_url):
     )
     ctx.close()
     return shape
+
+
+@pytest.fixture
+def device(browser, base_url):
+    """Factory: device(api, seeds=None, viewport=DESKTOP, hash="") -> Page wired to a FakeApi.
+
+    Each call is a separate browser context (a separate device) with its own session."""
+    contexts = []
+
+    def make(api, seeds=None, viewport=DESKTOP, hash=""):
+        ctx = browser.new_context(viewport=viewport, locale="ar")
+        ctx.set_default_timeout(5000)
+        contexts.append(ctx)
+        api.install(ctx)
+        if seeds:
+            ctx.add_init_script(seed_script(seeds))
+        page = ctx.new_page()
+        page.goto(base_url + hash)
+        return page
+
+    yield make
+    for c in contexts:
+        c.close()

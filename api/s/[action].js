@@ -1,4 +1,4 @@
-// Student API: /api/s/register | login | logout | sync | settings
+// Student API: /api/s/register | login | logout | sync | reset | settings
 import { getDeps } from "../../lib/deps.js";
 import {
   send,
@@ -189,6 +189,14 @@ const actions = {
     }
     await deps.store.updateStudent(student.id, { lastSeenAt: deps.now() });
     send(res, 200, { version: r.version, epoch });
+  },
+
+  async reset(req, res, deps) {
+    requireMethod(req, ["POST"]);
+    const student = await requireStudent(req, deps);
+    await deps.store.resetProgress(student.id);
+    const p = await deps.store.getProgress(student.id);
+    send(res, 200, { version: p.version, epoch: p.resetEpoch });
   },
 
   async settings(req, res, deps) {
