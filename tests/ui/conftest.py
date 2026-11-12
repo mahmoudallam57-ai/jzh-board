@@ -1,6 +1,7 @@
 import pytest
 from playwright.sync_api import sync_playwright
 
+from fakeapi import FakeApi
 from helpers import ROOT, enter_gate, seed_script, start_server
 
 DESKTOP = {"width": 1280, "height": 900}
@@ -36,6 +37,9 @@ def app(browser, base_url):
         ctx = browser.new_context(viewport=viewport, locale="ar")
         ctx.set_default_timeout(5000)
         contexts.append(ctx)
+        legacy = FakeApi()
+        legacy.classes = []   # no classes -> the legacy name-only (guest) gate; teacher login still works
+        legacy.install(ctx)
         if seeds:
             ctx.add_init_script(seed_script(seeds))
         page = ctx.new_page()

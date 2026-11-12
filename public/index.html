@@ -1375,10 +1375,12 @@ html{scrollbar-gutter:stable}  /* مساحة شريط التمرير محجوز�
       </ul>
     </div>
 
-    <label class="tclab" for="tPin">الرمز السرّي<span class="en inl">Passcode</span></label>
+    <label class="tclab" for="tMail">البريد<span class="en inl">Email</span></label>
+    <div class="tcrow"><input id="tMail" type="email" dir="ltr" autocomplete="username" maxlength="120" placeholder="بريد المعلّم" enterkeyhint="next"></div>
+    <label class="tclab" for="tPin">كلمة المرور<span class="en inl">Password</span></label>
     <div class="tcrow">
       <button class="tceye" id="tEye" type="button" aria-pressed="false" aria-label="إظهار الرمز"><svg viewBox="0 0 24 24"><path d="M2 12s3.8-6.5 10-6.5S22 12 22 12s-3.8 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.7"/></svg></button>
-      <input id="tPin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="24" placeholder="أدخل الرمز السرّي" enterkeyhint="go">
+      <input id="tPin" type="password" dir="ltr" autocomplete="current-password" maxlength="128" placeholder="كلمة المرور" enterkeyhint="go">
     </div>
     <span class="gerr" id="tErr" role="alert"></span>
 
@@ -1394,13 +1396,15 @@ html{scrollbar-gutter:stable}  /* مساحة شريط التمرير محجوز�
       <span class="tckey"><svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"/><path d="M12 12h9"/><path d="M17.5 12v3.4M20.3 12v2.4"/></svg></span>
       <div class="tctx">
         <b id="tlTitle">لوحة المعلّم مقفلة<span class="en">The teacher panel is locked</span></b>
-        <i id="tlNote">أدخل الرمز السرّي للدخول. هذه اللوحة فيها تقرير الطالب وأدوات التحكّم في الصفحة.</i>
+        <i id="tlNote">سجّل دخولك ببريد المعلّم وكلمة المرور. هذه اللوحة فيها نتائج الطلاب وأدوات التحكّم في الصفحة.</i>
       </div>
     </div>
-    <label class="tclab" for="tPin2">الرمز السرّي<span class="en inl">Passcode</span></label>
+    <label class="tclab" for="tMail2">البريد<span class="en inl">Email</span></label>
+    <div class="tcrow"><input id="tMail2" type="email" dir="ltr" autocomplete="username" maxlength="120" placeholder="بريد المعلّم" enterkeyhint="next"></div>
+    <label class="tclab" for="tPin2">كلمة المرور<span class="en inl">Password</span></label>
     <div class="tcrow">
       <button class="tceye" id="tEye2" type="button" aria-pressed="false" aria-label="إظهار الرمز"><svg viewBox="0 0 24 24"><path d="M2 12s3.8-6.5 10-6.5S22 12 22 12s-3.8 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.7"/></svg></button>
-      <input id="tPin2" type="password" inputmode="numeric" autocomplete="current-password" maxlength="24" placeholder="أدخل الرمز السرّي" enterkeyhint="go">
+      <input id="tPin2" type="password" dir="ltr" autocomplete="current-password" maxlength="128" placeholder="كلمة المرور" enterkeyhint="go">
     </div>
     <span class="gerr" id="tErr2" role="alert"></span>
     <button class="tcgo" id="tGo2" type="button"><svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"/><path d="M12 12h9"/><path d="M17.5 12v3.4M20.3 12v2.4"/></svg>دخول لوحة المعلّم</button>
@@ -1941,10 +1945,8 @@ html{scrollbar-gutter:stable}  /* مساحة شريط التمرير محجوز�
         <button class="btn outline danger" id="tWipe">امسح بيانات الطالب على هذا الجهاز<span class="en inl">Erase this device’s student data</span></button>
       </div>
       <div class="tsets" style="margin-top:12px">
-        <label class="tset"><span><b>الرمز السرّي لدخول لوحة المعلّم</b><i>اكتب رمزاً جديداً ثم اضغط «ثبّت». الرمز الافتراضي <code>1971</code> — غيّره الآن.<span class="en">Type a new passcode and press Set. The default is 1971 — change it now.</span></i>
-          <span class="pinrow"><input id="pinNew" type="text" maxlength="24" placeholder="رمز جديد"><button class="btn" id="pinSet">ثبّت</button></span></span></label>
+        <p class="note"><b>دخول المعلّم بالبريد وكلمة المرور</b> — تُغيَّر كلمة المرور من حساب Supabase، لا من هذه الصفحة.<span class="en">Teacher sign-in uses email and password; change the password in Supabase.</span></p>
       </div>
-      <p class="note" style="margin-top:12px">الرمز السرّي حاجز أمام العبث العابر لا حماية حقيقية؛ الصفحة تعمل في متصفّح الطالب، فلا تضع خلفه ما يضرّك كشفه.</p>
       <p class="note" style="margin-top:10px"><b>إن أخفيت زر «لوحة المعلّم»</b> فلن يراه الطالب، وتصل أنت إلى هذه اللوحة بإضافة <code>#teacher</code> إلى آخر رابط الصفحة.<span class="en">If you hide the Teacher Panel button, students will not see it; reach this panel by adding #teacher to the end of the page URL.</span></p>
     </div>
   </div>
@@ -2702,9 +2704,10 @@ var SYNC = (function () {
   return X;
 })();
 var STORE=SYNC.keys.main;
-var state={visited:{},notes:{},watch:{},done:{},crit:{},en:1,tl:{},ch:{},pl:{},lf:{},eye:{},badge:{},pres:0,res:null,hub:"",vis:{},ask:1,tpin:null,ttab:"vis",enset:0};
+var state={visited:{},notes:{},watch:{},done:{},crit:{},en:1,tl:{},ch:{},pl:{},lf:{},eye:{},badge:{},pres:0,res:null,hub:"",vis:{},ask:1,ttab:"vis",enset:0};
 try{var raw=localStorage.getItem(STORE); if(raw) state=Object.assign(state,JSON.parse(raw));}catch(e){}
 if(!state.enset){ state.en=0; state.enset=1; }   /* الترجمة مغلقة افتراضياً — يفتحها المعلّم */
+delete state.tpin;                                 /* بقايا الرمز السرّي القديم لا تُستعمل ولا تُنقل */
 SYNC.applySettings(state);                         /* إعدادات المعلّم المنشورة تسري على هذا الجهاز */
 if(SYNC.who){ state.notes.certName=SYNC.who.name; state.notes.certClass=SYNC.who.cls; }
 function save(){ if(SYNC.frozen) return; try{localStorage.setItem(STORE,JSON.stringify(state))}catch(e){} SYNC.dirty() }
@@ -2733,16 +2736,17 @@ var cur="home";
 function show(id,push){
   if(id==="teacher" && !AUTHED){ try{openLock(function(){show("teacher")},"teacher")}catch(e){} return; }
   if(id==="cert" && !AUTHED){
-    try{
-      var cr=certReq();
-      if(!cr.ok){
-        toast(!cr.gatesDone ? ("أكمل البوابات أولاً — "+cr.g+" من "+cr.gtot)
-                            : "أكمل بوكلت التقويم أولاً — "+cr.ver+" من "+(cr.qtot||25)+" بنداً");
-        return;
-      }
-      openLock(function(){ show("cert") },"cert");
-    }catch(e){}
-    return;
+    var cr; try{ cr=certReq() }catch(e){ return }
+    if(!cr.ok){
+      toast(!cr.gatesDone ? ("أكمل البوابات أولاً — "+cr.g+" من "+cr.gtot)
+                          : "أكمل بوكلت التقويم أولاً — "+cr.ver+" من "+(cr.qtot||25)+" بنداً");
+      return;
+    }
+    if(!SYNC.certApproved()){
+      if(SYNC.who) toast("شهادتك بانتظار اعتماد معلّمك");
+      else openLock(function(){ show("cert") },"cert");   /* ضيف بلا حساب: يفتحها المعلّم بتسجيل دخوله */
+      return;
+    }
   }
   var v=$("#v-"+id)||$("#home");
   $$(".view").forEach(function(s){s.hidden=true;s.classList.remove("anim")});
@@ -2931,24 +2935,41 @@ if(state.ask===0 && (location.hash||"")==="#gate") openGate();
 
 
 /* ---------------- دخول المعلّم ---------------- */
-var TPIN_DEF="1971";
-function pinHash(v){                 /* djb2 — حاجز لا تعمية */
-  var h=5381, str=String(v);
-  for(var i=0;i<str.length;i++){ h=((h<<5)+h+str.charCodeAt(i))>>>0 }
-  return h.toString(36);
+/* الدخول يتحقّق منه الخادم؛ التوكن في ذاكرة الصفحة فقط — لا يُحفظ، وكل تحميل يطلب الدخول من جديد */
+var TTOKEN=null;
+function teacherLogin(email,pw){
+  return fetch("/api/t/login",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({email:email,password:pw})})
+  .then(function(r){ return r.text().then(function(t){ var j=null; try{j=t?JSON.parse(t):null}catch(e){} return {status:r.status,json:j} }) },
+        function(){ return {status:0,json:null} });
 }
-function pinOK(v){ return pinHash(v)===(state.tpin||pinHash(TPIN_DEF)) }
-var pinTries=0;
+function loginMsg(r){
+  if(r.status===401) return "بيانات الدخول غير صحيحة · Wrong email or password";
+  if(r.status===403) return "هذا الحساب ليس حساب المعلّم · Not the teacher account";
+  if(r.status===429) return "محاولات كثيرة — حاول بعد "+Math.max(1,Math.ceil(((r.json&&r.json.retryAfterSec)||60)/60))+" دقيقة";
+  if(r.status===400) return "اكتب البريد وكلمة المرور · Enter email and password";
+  return "تعذّر الاتصال بالخادم — تحقّق من الشبكة · Server unreachable";
+}
+function tfetch(path,opts){
+  opts=Object.assign({},opts||{}); var h=Object.assign({},opts.headers||{});
+  h.Authorization="Bearer "+TTOKEN;
+  if(opts.body!==undefined&&typeof opts.body!=="string"){ h["Content-Type"]="application/json"; opts.body=JSON.stringify(opts.body) }
+  opts.headers=h;
+  return fetch("/api/t/"+path,opts).then(function(r){
+    if(r.status===401){ TTOKEN=null; AUTHED=false; try{ openLock(null,"teacher") }catch(e){} }
+    return r;
+  });
+}
 function tcErr(msg){
   $("#tErr").textContent=msg;
   var c=$("#tcard"); c.classList.remove("shake"); void c.offsetWidth; c.classList.add("shake");
 }
 var AUTHED=false, PENDING=null, LOCK_HOME=false;
 var LOCK_TXT={
-  teacher:"أدخل الرمز السرّي للدخول. هذه اللوحة فيها تقرير الطالب وأدوات التحكّم في الصفحة.",
-  lang:"الترجمة الإنجليزية يتحكّم بها المعلّم وحده. أدخل الرمز السرّي لإظهارها أو إخفائها.",
-  res:"أدوات مصادر التعلم للمعلّم وحده. أدخل الرمز السرّي لتحرير الروابط أو نسخ القائمة.",
-  cert:"أتمّ الطالب البوابات وبوكلت التقويم. أدخل الرمز السرّي لتسليمه شهادة الرحلة."
+  teacher:"سجّل دخولك ببريد المعلّم وكلمة المرور. هذه اللوحة فيها نتائج الطلاب وأدوات التحكّم في الصفحة.",
+  lang:"الترجمة الإنجليزية يتحكّم بها المعلّم وحده. سجّل دخولك لإظهارها أو إخفائها.",
+  res:"أدوات مصادر التعلم للمعلّم وحده. سجّل دخولك لتحرير الروابط أو نسخ القائمة.",
+  cert:"الشهادة يعتمدها المعلّم. سجّل دخولك لفتحها على هذا الجهاز."
 };
 function certReq(){
   var LS=liveSections();
@@ -2966,21 +2987,24 @@ function certReq(){
 }
 function paintCertReq(){
   var box=$("#cbReq"); if(!box) return;
-  var r=certReq();
+  var r=certReq(), appr=SYNC.certApproved();
   box.innerHTML=
     '<li class="'+(r.gatesDone?"done":"")+'"><span class="mk">'+(r.gatesDone?"✓":"1")+'</span>'+
       '<span>استكشف بوابات الرحلة كلّها <b>('+r.g+" / "+r.gtot+')</b>'+E("Explore every gateway")+'</span></li>'+
     '<li class="'+(r.quiz?"done":"")+'"><span class="mk">'+(r.quiz?"✓":"2")+'</span>'+
       '<span>أجب على بوكلت التقويم كاملاً <b>('+r.ver+" / "+(r.qtot||25)+' بنداً)</b>'+E("Answer the whole assessment booklet")+'</span></li>'+
-    '<li class="key"><span class="mk">🔑</span><span>ثم يفعّلها معلّمك بالرمز السرّي'+E("Then your teacher releases it with the passcode")+'</span></li>';
+    (appr ? '<li class="done"><span class="mk">✓</span><span>اعتمدها معلّمك'+E("Your teacher approved it")+'</span></li>'
+          : '<li class="key"><span class="mk">🔑</span><span>ثم يعتمدها معلّمك من لوحته'+E("Then your teacher approves it from the teacher panel")+'</span></li>');
+  var open=r.ok&&(appr||AUTHED||!SYNC.who);
   var btn=$(".cbgo");
   if(btn){
-    btn.disabled=!r.ok;
-    btn.title = r.ok ? "جاهزة — يفتحها المعلّم بالرمز السرّي"
-                     : "أكمل البوابات وبوكلت التقويم أولاً";
+    btn.disabled=!open;
+    btn.title = !r.ok ? "أكمل البوابات وبوكلت التقويم أولاً"
+              : appr||AUTHED ? "جاهزة — اضغط لاستلام شهادتك"
+              : SYNC.who ? "بانتظار اعتماد معلّمك" : "جاهزة — يفتحها معلّمك بتسجيل دخوله";
   }
   var hv=$("#v-harvest [data-go='cert']");
-  if(hv){ hv.disabled=!r.ok; hv.style.opacity=r.ok?"":"0.55"; }
+  if(hv){ hv.disabled=!open; hv.style.opacity=open?"":"0.55"; }
 }
 function teacherOnly(fn,kind){
   return function(){ if(!AUTHED){ openLock(fn,kind||"teacher"); return } fn(); };
@@ -2990,25 +3014,29 @@ function openLock(after,kind){
   PENDING=after||null; LOCK_HOME=(kind||"teacher")==="teacher";
   var note=$("#tlNote"); if(note) note.textContent=LOCK_TXT[kind||"teacher"]||LOCK_TXT.teacher;
   l.hidden=false; $("#tErr2").textContent=""; $("#tPin2").value="";
-  setTimeout(function(){ try{$("#tPin2").focus()}catch(e){} },120);
+  setTimeout(function(){ try{ ($("#tMail2").value?$("#tPin2"):$("#tMail2")).focus() }catch(e){} },120);
 }
 function closeLock(){ var l=$("#tlock"); if(l) l.hidden=true }
 function lockIn(){
-  var v=$("#tPin2").value.trim();
-  if(!v){ $("#tErr2").textContent="اكتب الرمز السرّي أولاً · Enter the passcode"; return }
-  if(pinTries>=5){ $("#tErr2").textContent="محاولات كثيرة — انتظر قليلاً ثم أعد المحاولة"; return }
-  if(!pinOK(v)){ pinTries++; $("#tPin2").value="";
-    $("#tErr2").textContent="رمز غير صحيح ("+pinTries+"/5) · Wrong passcode";
-    var c=$(".tlcard"); c.classList.remove("shake"); void c.offsetWidth; c.classList.add("shake");
-    return }
-  pinTries=0; AUTHED=true; closeLock();
-  var f=PENDING; PENDING=null;
-  if(f) f(); else show("teacher");
+  var m=$("#tMail2").value.trim(), v=$("#tPin2").value;
+  if(!m||!v){ $("#tErr2").textContent="اكتب البريد وكلمة المرور أولاً · Enter email and password"; return }
+  var go=$("#tGo2"); go.disabled=true; $("#tErr2").textContent="";
+  teacherLogin(m,v).then(function(r){
+    go.disabled=false;
+    if(r.status!==200||!r.json||!r.json.token){
+      $("#tPin2").value=""; $("#tErr2").textContent=loginMsg(r);
+      var c=$(".tlcard"); c.classList.remove("shake"); void c.offsetWidth; c.classList.add("shake");
+      return }
+    TTOKEN=r.json.token; AUTHED=true; $("#tPin2").value=""; closeLock();
+    var f=PENDING; PENDING=null;
+    if(f) f(); else show("teacher");
+  });
 }
 (function(){
   var g=$("#tGo2"); if(!g) return;
   g.addEventListener("click",lockIn);
   $("#tPin2").addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); lockIn() } });
+  $("#tMail2").addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); $("#tPin2").focus() } });
   $("#tEye2").addEventListener("click",function(){
     var i=$("#tPin2"), on=i.type==="password";
     i.type=on?"text":"password"; this.setAttribute("aria-pressed",String(on)); i.focus();
@@ -3022,14 +3050,16 @@ function lockIn(){
 })();
 
 function teacherIn(){
-  var v=$("#tPin").value.trim();
-  if(!v){ tcErr("اكتب الرمز السرّي أولاً · Enter the passcode"); $("#tPin").focus(); return }
-  if(pinTries>=5){ tcErr("محاولات كثيرة — انتظر قليلاً ثم أعد المحاولة"); return }
-  if(!pinOK(v)){ pinTries++; $("#tPin").value=""; $("#tPin").focus();
-    tcErr("رمز غير صحيح ("+pinTries+"/5) · Wrong passcode"); return }
-  pinTries=0; AUTHED=true; $("#tErr").textContent=""; $("#tPin").value="";
-  closeGate(false);
-  setTimeout(function(){ show("teacher") },260);
+  var m=$("#tMail").value.trim(), v=$("#tPin").value;
+  if(!m||!v){ tcErr("اكتب البريد وكلمة المرور أولاً · Enter email and password"); (m?$("#tPin"):$("#tMail")).focus(); return }
+  var go=$("#tGo"); go.disabled=true; $("#tErr").textContent="";
+  teacherLogin(m,v).then(function(r){
+    go.disabled=false;
+    if(r.status!==200||!r.json||!r.json.token){ $("#tPin").value=""; $("#tPin").focus(); tcErr(loginMsg(r)); return }
+    TTOKEN=r.json.token; AUTHED=true; $("#tErr").textContent=""; $("#tPin").value="";
+    closeGate(false);
+    setTimeout(function(){ show("teacher") },260);
+  });
 }
 (function(){
   var av=$("#tcAv"), pr=$("#tcProf"); if(!av) return;
@@ -3043,6 +3073,7 @@ function teacherIn(){
   var go=$("#tGo"); if(!go) return;
   go.addEventListener("click",teacherIn);
   $("#tPin").addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); teacherIn() } });
+  $("#tMail").addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); $("#tPin").focus() } });
   $("#tEye").addEventListener("click",function(){
     var i=$("#tPin"), on=i.type==="password";
     i.type = on ? "text" : "password";
@@ -3107,7 +3138,7 @@ $("#btnReset").addEventListener("click",function(){
     return;
   }
   var keepV=state.vis, keepA=state.ask, keepR=state.res;
-  state={visited:{},notes:{},watch:{},done:{},crit:{},en:0,enset:1,tl:{},ch:{},pl:{},lf:{},eye:{},badge:{},pres:0,res:keepR,hub:"",vis:keepV,ask:keepA,tpin:state.tpin,ttab:state.ttab};
+  state={visited:{},notes:{},watch:{},done:{},crit:{},en:0,enset:1,tl:{},ch:{},pl:{},lf:{},eye:{},badge:{},pres:0,res:keepR,hub:"",vis:keepV,ask:keepA,ttab:state.ttab};
   save(); location.hash=""; location.reload();
 });
 document.addEventListener("keydown",function(e){
@@ -4334,7 +4365,7 @@ function paintSets(){
 
 /* نقل الإعدادات */
 function cfgPack(){
-  var o={v:state.vis,en:state.en,hub:state.hub,pres:state.pres,ask:state.ask,res:state.res,pin:state.tpin};
+  var o={v:state.vis,en:state.en,hub:state.hub,pres:state.pres,ask:state.ask,res:state.res};
   try{ return btoa(unescape(encodeURIComponent(JSON.stringify(o)))) }catch(e){ return "" }
 }
 function cfgUnpack(txt){
@@ -4356,20 +4387,13 @@ function cfgUnpack(txt){
     if(typeof o.ask==="number") state.ask=o.ask;
     if(typeof o.hub==="string") state.hub=o.hub;
     if(o.res) state.res=o.res;
-    if(typeof o.pin==="string") state.tpin=o.pin;
     save(); toast("طُبّقت الإعدادات — يُعاد تحميل الصفحة");
     setTimeout(function(){ location.reload() },900);
   });
   $("#cfgReset").addEventListener("click",function(){
-    state.vis={}; state.ask=1; state.res=null; state.tpin=null; save();
+    state.vis={}; state.ask=1; state.res=null; save();
     applyVis(); paintVis(); paintSets(); try{paintRes()}catch(e){}
     toast("عادت الإعدادات الافتراضية");
-  });
-  $("#pinSet").addEventListener("click",function(){
-    var v=$("#pinNew").value.trim();
-    if(v.length<4) return toast("اجعل الرمز أربعة محارف فأكثر");
-    state.tpin=pinHash(v); save(); $("#pinNew").value="";
-    toast("ثُبّت الرمز الجديد — احفظه عندك");
   });
   $("#tCopy2").addEventListener("click",function(){ copyText(teacherText(),"نُسخ تقرير الطالب") });
   $("#tCert").addEventListener("click",function(){ show("cert") });

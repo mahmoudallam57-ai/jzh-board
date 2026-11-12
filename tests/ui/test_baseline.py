@@ -10,8 +10,8 @@ import json
 import pytest
 
 from conftest import DESKTOP, MOBILE
-from helpers import (GATES, QUIZ_STORE, TEACHER_PIN, TMO, TYPE_FLOOR_JS, VISIBLE_CONTROLS_JS,
-                     enter_gate, get_state, quiz_seed, set_state, unlock_teacher)
+from helpers import (GATES, QUIZ_STORE, TEACHER_PASSWORD, TMO, TYPE_FLOOR_JS, VISIBLE_CONTROLS_JS,
+                     enter_gate, get_state, quiz_seed, set_state, unlock_teacher, wrong_login)
 
 
 # ---------------------------------------------------------------- small utilities
@@ -138,42 +138,38 @@ def test_hidden_gate_vanishes_from_progress_and_nav(app):
 
 # ---------------------------------------------------------------- 4. teacher panel passcode
 
-def test_teacher_panel_needs_passcode_1971(app):
+def test_teacher_panel_needs_server_login(app):
     # (a) through the teacher card on the entry gate
     page = app(enter=False)
-    assert page.locator("#tPin").is_visible()
+    assert page.locator("#tMail").is_visible() and page.locator("#tPin").is_visible()
     page.click("#tGo")
-    assert "اكتب الرمز" in page.inner_text("#tErr")
-    page.fill("#tPin", "0000")
-    page.click("#tGo")
-    assert "رمز غير صحيح" in page.inner_text("#tErr")
+    assert "اكتب البريد" in page.inner_text("#tErr")
+    wrong_login(page, "")
     assert not page.locator("#v-teacher").is_visible() and page.locator("#gate").is_visible()
-    page.fill("#tPin", TEACHER_PIN)
+    page.fill("#tPin", TEACHER_PASSWORD)
     page.click("#tGo")
     page.wait_for_selector("#v-teacher", state="visible", timeout=TMO)
     page.wait_for_selector("#gate", state="hidden", timeout=TMO)
 
-    # (b) through the home button -> lock overlay; wrong code never reveals the panel,
-    #     and after five misses even the right code is refused
+    # (b) through the home button -> lock overlay; a wrong password never reveals the panel
     page = app()
     page.click("#btnTeacher")
     assert page.locator("#tlock").is_visible() and not page.locator("#v-teacher").is_visible()
-    for i in range(5):
-        page.fill("#tPin2", "9999")
-        page.click("#tGo2")
-        assert "رمز غير صحيح" in page.inner_text("#tErr2")
-    assert not page.locator("#v-teacher").is_visible()
-    page.fill("#tPin2", TEACHER_PIN)
-    page.click("#tGo2")
-    assert "محاولات كثيرة" in page.inner_text("#tErr2")
-    assert not page.locator("#v-teacher").is_visible()
+    for _ in range(3):
+        wrong_login(page)
+        assert not page.locator("#v-teacher").is_visible()
 
-    # (c) the right code on a fresh load opens it
+    # (c) the right credentials on a fresh load open it
     page = app()
     page.click("#btnTeacher")
     unlock_teacher(page)
     page.wait_for_selector("#v-teacher", state="visible", timeout=TMO)
     assert page.locator(".ttab").count() == 3
+
+    # (d) no trace of the old client-side passcode remains in the page
+    html = page.content()
+    for gone in ("TPIN_DEF", "pinHash", "pinOK", "pinNew"):
+        assert gone not in html, gone
 
 
 # ---------------------------------------------------------------- 5. AUTHED is never persisted
@@ -194,7 +190,7 @@ def test_authed_not_persisted_across_reload(app):
     # nothing about the session reaches storage
     dump = page.evaluate(
         "() => JSON.stringify([localStorage, sessionStorage].map(s => Object.fromEntries(Object.entries(s))))")
-    assert "auth" not in dump.lower() and TEACHER_PIN not in dump
+    assert "auth" not in dump.lower() and "tok-teacher" not in dump and TEACHER_PASSWORD not in dump
     assert "auth" not in json.dumps(get_state(page)).lower()
 
     # reload (the URL now says #teacher): the code is demanded again, panel stays shut
@@ -222,8 +218,7 @@ def test_hash_teacher_route_when_button_hidden(app):
     go_hash_and_reload(page, "#teacher")
     page.wait_for_selector("#tlock", state="visible", timeout=TMO)
     assert not page.locator("#v-teacher").is_visible()
-    page.fill("#tPin2", "0000")
-    page.click("#tGo2")
+    wrong_login(page)
     assert not page.locator("#v-teacher").is_visible()
     unlock_teacher(page)
     page.wait_for_selector("#v-teacher", state="visible", timeout=TMO)
@@ -305,9 +300,7 @@ def test_cert_needs_all_gates_and_quiz_and_passcode(app, quiz_shape):
     page.click(".cbgo")
     page.wait_for_selector("#tlock", state="visible", timeout=TMO)
     assert not page.locator("#v-cert").is_visible()
-    page.fill("#tPin2", "0000")
-    page.click("#tGo2")
-    assert "رمز غير صحيح" in page.inner_text("#tErr2")
+    wrong_login(page)
     assert not page.locator("#v-cert").is_visible()
     unlock_teacher(page)
     page.wait_for_selector("#v-cert", state="visible", timeout=TMO)
@@ -404,7 +397,7 @@ def test_reset_keeps_vis_res_ask(app):
     assert after["vis"] == {"gate.film": 0, "ui.lang": 0}
     assert after["res"] == res
     assert after["ask"] == 0
-    assert after["tpin"] == "abc123"
+    assert "tpin" not in after, "the old passcode hash is dropped, never kept"
     assert after["en"] == 0
     # ask=0: nobody is asked for a name after the reset
     assert not page.locator("#gate").is_visible()

@@ -13,7 +13,8 @@ import threading
 ROOT = pathlib.Path(__file__).resolve().parents[2] / "public"
 STORE = "jzh.v1"
 QUIZ_STORE = "jzh.quiz.v1"
-TEACHER_PIN = "1971"
+TEACHER_EMAIL = "teacher@school.ae"
+TEACHER_PASSWORD = "pw-ok"
 TMO = 4000  # short explicit timeout (ms) for every wait
 
 GATES = ["story", "film", "plates", "web", "place", "time", "eye", "walk",
@@ -46,12 +47,22 @@ def enter_gate(page, name="طالب تجريبي", cls="7/3"):
         page.wait_for_selector("#wel", state="hidden", timeout=TMO)
 
 
-def unlock_teacher(page, pin=TEACHER_PIN):
-    """Type the passcode in the lock overlay (#tlock) that a teacher-only action opened."""
+def unlock_teacher(page, email=TEACHER_EMAIL, password=TEACHER_PASSWORD):
+    """Sign in through the lock overlay (#tlock) that a teacher-only action opened."""
     page.wait_for_selector("#tlock:not([hidden])", timeout=TMO)
-    page.fill("#tPin2", pin)
+    page.fill("#tMail2", email)
+    page.fill("#tPin2", password)
     page.click("#tGo2")
     page.wait_for_selector("#tlock", state="hidden", timeout=TMO)
+
+
+def wrong_login(page, sel="2"):
+    """Type a wrong password into the lock ("2") or the gate card (""); wait for the refusal."""
+    page.fill(f"#tMail{sel}", TEACHER_EMAIL)
+    page.fill(f"#tPin{sel}", "wrong-password")
+    page.click(f"#tGo{sel}")
+    page.wait_for_function(f"() => document.querySelector('#tErr{sel}').textContent.includes('غير صحيحة')",
+                           timeout=TMO)
 
 
 def get_state(page, key=STORE):
