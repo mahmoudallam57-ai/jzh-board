@@ -8,6 +8,7 @@ context gets its own student session, like a cookie would.
 import json
 import re
 import uuid
+from urllib.parse import unquote
 
 TEACHER_EMAIL = "teacher@school.ae"
 TEACHER_PASSWORD = "pw-ok"
@@ -73,7 +74,7 @@ class FakeApi:
             return route.abort("internetdisconnected")
         if f"{req.method} {action}" in self.fail:
             return self._reply(route, 500, {"error": "server"})
-        q = dict(re.findall(r"[?&]([^=&]+)=([^&]*)", req.url))
+        q = {k: unquote(v) for k, v in re.findall(r"[?&]([^=&]+)=([^&]*)", req.url)}
         fn = getattr(self, f"_{side}_{action.replace('-', '_')}", None)
         if not fn:
             return self._reply(route, 404, {"error": "not_found"})

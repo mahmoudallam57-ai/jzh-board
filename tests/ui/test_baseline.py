@@ -164,7 +164,7 @@ def test_teacher_panel_needs_server_login(app):
     page.click("#btnTeacher")
     unlock_teacher(page)
     page.wait_for_selector("#v-teacher", state="visible", timeout=TMO)
-    assert page.locator(".ttab").count() == 3
+    assert page.locator(".ttab").count() == 4
 
     # (d) no trace of the old client-side passcode remains in the page
     html = page.content()
@@ -357,7 +357,7 @@ def _audit_type_floor(page):
     go_hash_and_reload(page, "#teacher")
     unlock_teacher(page)
     page.wait_for_selector("#v-teacher", state="visible", timeout=TMO)
-    for tab in ("report", "vis", "tools"):
+    for tab in ("students", "report", "vis", "tools"):
         page.click(f'.ttab[data-t="{tab}"]')
         check(f"teacher/{tab}")
     return found

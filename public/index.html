@@ -1062,6 +1062,23 @@ html{scrollbar-gutter:stable}  /* مساحة شريط التمرير محجوز�
   box-shadow:var(--shadow-lg);z-index:80;opacity:0;transform:translateY(16px);pointer-events:none;
   transition:opacity .3s ease,transform .3s ease}
 .toast.on{opacity:1;transform:none}
+/* تبويب الطلاب */
+.stbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.stlab{font-size:0.95rem;font-weight:700;color:var(--muted)}
+.stsel{padding:10px 12px;border-radius:12px;border:1.6px solid var(--line);background:var(--inset);color:var(--fg);
+  font-family:var(--body);font-size:0.95rem;font-weight:600}
+.stwrap{overflow-x:auto}
+.sttab{width:100%;border-collapse:collapse;font-size:0.95rem;font-weight:600}
+.sttab th,.sttab td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.sttab th{color:var(--muted);font-weight:700}
+.stname{background:none;border:0;padding:0;color:var(--sea-2);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline}
+.stnew{display:inline-block;margin-inline-start:6px;padding:2px 9px;border-radius:999px;background:var(--gold);color:#241A06;font-size:0.875rem;font-weight:700}
+.stcert{padding:7px 13px}
+.stacts{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0}
+.stacts input,.stacts select{padding:9px 12px;border-radius:10px;border:1.6px solid var(--line);background:var(--inset);
+  color:var(--fg);font-family:var(--body);font-size:0.95rem;font-weight:600}
+.sthead{font-size:1.1rem;font-weight:700;margin-bottom:6px}
+@media print{.stbar,.stacts,.stcert{display:none!important}}
 /* شريط المزامنة */
 .syncbar{position:fixed;inset:auto 12px 78px 12px;margin-inline:auto;max-width:560px;background:#7A2E12;color:#fff;
   padding:10px 16px;border-radius:14px;font-size:15px;font-weight:700;line-height:1.6;z-index:79;text-align:center;box-shadow:var(--shadow-lg)}
@@ -1876,9 +1893,27 @@ html{scrollbar-gutter:stable}  /* مساحة شريط التمرير محجوز�
   <div class="sec-title"><span class="pill brass">للمعلّم</span><h2>لوحة المعلّم<span class="en">Teacher Panel</span></h2></div>
   <p class="sec-sub">كل ما أنجزه هذا الطالب على هذا الجهاز، مجموعاً في شاشة واحدة. انسخ التقرير وسلّمه أو احفظه في ملف الطالب.</p>
   <div class="ttabs" role="tablist">
+    <button class="ttab" role="tab" data-t="students" aria-selected="false">الطلاب<span class="en inl">Students</span></button>
     <button class="ttab" role="tab" data-t="report" aria-selected="false">تقرير الطالب<span class="en inl">Report</span></button>
     <button class="ttab" role="tab" data-t="vis" aria-selected="true">إظهار وإخفاء<span class="en inl">Show / hide</span></button>
     <button class="ttab" role="tab" data-t="tools" aria-selected="false">أدوات وإعدادات<span class="en inl">Tools</span></button>
+  </div>
+
+  <div class="tpane" data-t="students" hidden>
+    <div class="panel">
+      <div class="stbar">
+        <label class="stlab" for="stCls">الشعبة<span class="en inl">Class</span></label>
+        <select id="stCls" class="stsel"><option value="">كل الشعب</option></select>
+        <button class="btn outline" id="stRefresh" type="button">تحديث<span class="en inl">Refresh</span></button>
+        <button class="btn outline" id="stCsv" type="button">تنزيل CSV<span class="en inl">Download CSV</span></button>
+        <span class="vishint" id="stCount"></span>
+      </div>
+      <div class="stwrap"><table class="sttab" id="stTable">
+        <thead><tr><th>الاسم</th><th>الشعبة</th><th>البوابات</th><th>التقويم</th><th>آخر دخول</th><th>الشهادة</th></tr></thead>
+        <tbody></tbody></table></div>
+      <p class="note" id="stEmpty" hidden>لا طلاب مسجّلين بعد في هذه الشعبة.<span class="en">No registered students in this class yet.</span></p>
+    </div>
+    <div class="panel" id="stDetail" hidden></div>
   </div>
 
   <div class="tpane" data-t="report" hidden>
@@ -1890,7 +1925,7 @@ html{scrollbar-gutter:stable}  /* مساحة شريط التمرير محجوز�
       <button class="btn" id="tCopy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg> انسخ تقرير الطالب</button>
       <button class="btn outline" id="tBack">العودة إلى البوابة</button>
     </div>
-    <p class="note" style="margin-top:12px">البيانات من متصفّح هذا الجهاز وحده. لجمع إجابات الصف، اطلب من كل طالب نسخ تقريره وإرساله إليك.</p>
+    <p class="note" style="margin-top:12px">هذا تقرير الطالب على هذا الجهاز. نتائج الصف كلّه تصلك تلقائياً في تبويب «الطلاب».</p>
   </div>
   </div>
 
@@ -1922,6 +1957,19 @@ html{scrollbar-gutter:stable}  /* مساحة شريط التمرير محجوز�
             <option value="badges">استلام الشهادة</option>
           </select></label>
       </div>
+    </div>
+
+    <div class="panel">
+      <h3 class="th3">انشر الإعدادات للطلاب<span class="en">Publish to your students</span></h3>
+      <p class="note">ما تضبطه في «إظهار وإخفاء» و«إعدادات العرض» معاينة على هذا الجهاز. اضغط «انشر» فيصل كل طالب في الشعبة المختارة عند فتح الصفحة، دون كود.</p>
+      <div class="tsets">
+        <select id="pubCls" class="stsel"><option value="*">كل الشعب (الافتراضي)</option></select>
+        <button class="btn" id="pubGo" type="button">انشر<span class="en inl">Publish</span></button>
+      </div>
+      <h3 class="th3" style="margin-top:18px">الشعب<span class="en">Classes</span></h3>
+      <p class="note">شعبة في كل سطر: الرمز ثم <b>|</b> ثم الاسم الظاهر للطلاب. مثال: <code>7/3 | السابع ٣</code></p>
+      <textarea id="clsIn" class="cfgta" rows="4" dir="auto"></textarea>
+      <div class="tsets"><button class="btn outline" id="clsSave" type="button">احفظ الشعب<span class="en inl">Save classes</span></button></div>
     </div>
 
     <div class="panel">
@@ -3028,6 +3076,7 @@ function lockIn(){
       var c=$(".tlcard"); c.classList.remove("shake"); void c.offsetWidth; c.classList.add("shake");
       return }
     TTOKEN=r.json.token; AUTHED=true; $("#tPin2").value=""; closeLock();
+    try{ if(!$("#gate").hidden) closeGate(false) }catch(e){}   /* المعلّم لا يُسأل عن اسم طالب */
     var f=PENDING; PENDING=null;
     if(f) f(); else show("teacher");
   });
@@ -4339,12 +4388,159 @@ function paintVis(){
 })();
 
 /* تبويبات اللوحة */
+/* ---------------- الطلاب: نتائج الصف من الخادم ---------------- */
+var ST={list:[],classes:[],sel:null};
+function tjson(path,opts){
+  return tfetch(path,opts).then(function(r){ return r.text().then(function(t){ var j=null; try{j=t?JSON.parse(t):null}catch(e){} return {status:r.status,json:j} }) },
+                                function(){ return {status:0,json:null} });
+}
+function stLoadClasses(){
+  return SYNC.classes().then(function(l){ ST.classes=l },function(){ ST.classes=[] }).then(function(){
+    var o=ST.classes.map(function(c){ return '<option value="'+esc(c.code)+'">'+esc(c.label||c.code)+'</option>' }).join("");
+    var cs=$("#stCls"), v=cs.value; cs.innerHTML='<option value="">كل الشعب</option>'+o; cs.value=v;
+    var pc=$("#pubCls"), pv=pc.value||"*"; pc.innerHTML='<option value="*">كل الشعب (الافتراضي)</option>'+o; pc.value=pv;
+    $("#clsIn").value=ST.classes.map(function(c){ return c.code+" | "+(c.label||c.code) }).join("\n");
+  });
+}
+function stAgo(ms){
+  if(!ms) return "—"; var m=Math.round((Date.now()-ms)/60000);
+  if(m<1) return "الآن"; if(m<60) return "قبل "+m+" دقيقة";
+  var h=Math.round(m/60); if(h<24) return "قبل "+h+" ساعة";
+  return new Date(ms).toLocaleDateString("ar-AE");
+}
+function stQuiz(m){
+  if(!m||!m.quizTrack) return "—";
+  return m.quizTrack.toUpperCase()+" · "+(m.quizScore==null?"—":m.quizScore+"٪")+(m.submitted?" ✓ مُسلَّم":"");
+}
+function stLoad(){
+  $("#stCount").textContent="جارٍ التحميل…";
+  var c=$("#stCls").value;
+  return tjson("students"+(c?"?cls="+encodeURIComponent(c):"")).then(function(r){
+    if(r.status!==200||!Array.isArray(r.json)){ $("#stCount").textContent= r.status===401?"":"تعذّر جلب الطلاب — تحقّق من الاتصال"; return }
+    ST.list=r.json; stPaint();
+  });
+}
+function stPaint(){
+  var live=liveSections().length;
+  $("#stCount").textContent=ST.list.length+" طالباً";
+  $("#stEmpty").hidden=ST.list.length>0;
+  $("#stTable tbody").innerHTML=ST.list.map(function(s){
+    var m=s.summary||{};
+    return '<tr data-id="'+esc(s.id)+'">'+
+      '<td><button class="stname" type="button" data-act="open">'+esc(s.name)+'</button>'+(s.isNew?'<span class="stnew">جديد</span>':'')+'</td>'+
+      '<td>'+esc(s.cls)+'</td>'+
+      '<td>'+Math.min(m.visited||0,live)+'/'+live+'</td>'+
+      '<td>'+esc(stQuiz(m))+'</td>'+
+      '<td>'+esc(stAgo(s.lastSeenAt))+'</td>'+
+      '<td><button class="btn '+(s.certApproved?'':'outline ')+'stcert" type="button" data-act="cert">'+(s.certApproved?'معتمدة ✓':'اعتمد')+'</button></td>'+
+    '</tr>';
+  }).join("");
+}
+function stFind(id){ return ST.list.filter(function(x){return x.id===id})[0] }
+function stCert(s,on){
+  return tjson("certificate",{method:"POST",body:{id:s.id,approved:on}}).then(function(r){
+    if(r.status!==200){ toast("تعذّر الحفظ — حاول مجدداً"); return }
+    s.certApproved=on; stPaint(); if(ST.sel===s.id) stOpen(s.id);
+    toast(on?"اعتُمدت شهادة "+s.name+" — تنفتح على جهازه":"سُحب اعتماد الشهادة");
+  });
+}
+function stOpen(id){
+  var box=$("#stDetail"); ST.sel=id;
+  box.hidden=false; box.innerHTML='<p class="note">جارٍ التحميل…</p>';
+  return tjson("student?id="+encodeURIComponent(id)).then(function(r){
+    if(r.status!==200||!r.json){ box.innerHTML='<p class="note">تعذّر جلب بيانات الطالب.</p>'; return }
+    var d=r.json, st=d.state||{}, s=stFind(id)||{id:id,name:d.student.name,cls:d.student.cls,certApproved:d.certApproved};
+    var keep=state, txt="";
+    state=Object.assign({},keep,pickMain(st.main));
+    try{ txt=teacherText() }catch(e){ txt="" } finally{ state=keep }
+    var q=pickQuiz(st.quiz), ql="درجات التقويم — "+SYNC_TRACKS.map(function(tk){
+      var x=trackStat(q,tk); return tk.toUpperCase()+": "+(x.n?Math.round(x.pts/x.n*400)/10:0)+"/40 ("+x.ver+"/"+x.n+")" }).join(" · ");
+    txt=txt.split("\n").filter(function(l){ return l.indexOf("درجات التقويم")!==0 }).join("\n").replace(/^(البوابات المستكشفة:.*)$/m,"$1\n"+ql);
+    var others=ST.list.filter(function(x){ return x.id!==id && x.cls===s.cls });
+    box.innerHTML=
+      '<div class="sthead">'+esc(d.student.name)+' · '+esc(d.student.cls)+'</div>'+
+      '<p class="note">'+esc(stQuiz(d.summary||{}))+' · آخر دخول: '+esc(stAgo(d.student.lastSeenAt))+'</p>'+
+      '<div class="stacts">'+
+        '<button class="btn '+(s.certApproved?'outline':'')+'" type="button" data-a="cert">'+(s.certApproved?'اسحب اعتماد الشهادة':'اعتمد الشهادة')+'</button>'+
+        '<input id="stPin" inputmode="numeric" maxlength="4" placeholder="رمز جديد" aria-label="رمز جديد من أربعة أرقام">'+
+        '<button class="btn outline" type="button" data-a="reset-pin">ثبّت رمزاً جديداً</button>'+
+        '<input id="stName" maxlength="46" value="'+esc(d.student.name)+'" aria-label="الاسم">'+
+        '<button class="btn outline" type="button" data-a="rename">غيّر الاسم</button>'+
+      '</div><div class="stacts">'+
+        (others.length?'<select id="stMerge" aria-label="سجلّ مكرّر">'+others.map(function(o){ return '<option value="'+esc(o.id)+'">'+esc(o.name)+'</option>' }).join("")+'</select>'+
+          '<button class="btn outline" type="button" data-a="merge">ادمج هذا السجلّ فيه</button>':'')+
+        '<button class="btn outline danger" type="button" data-a="reset-progress">صفّر تقدّمه</button>'+
+        '<button class="btn outline danger" type="button" data-a="delete">احذف الطالب</button>'+
+      '</div>'+
+      '<div class="treport">'+esc(txt)+'</div>';
+  });
+}
+function stAct(btn,id){
+  var a=btn.dataset.a, s=stFind(id); if(!s) return;
+  if(a==="cert") return stCert(s,!s.certApproved);
+  var body={id:id,action:a};
+  if(a==="reset-pin"){ body.newPin=toAscii($("#stPin").value); if(!/^\d{4}$/.test(body.newPin)) return toast("الرمز أربعة أرقام") }
+  if(a==="rename"){ body.newName=$("#stName").value.trim(); if(!body.newName) return toast("اكتب الاسم") }
+  if(a==="merge"){ body.dropId=$("#stMerge").value }
+  if((a==="delete"||a==="reset-progress"||a==="merge") && btn.dataset.c!=="1"){
+    btn.dataset.c="1"; btn.textContent="اضغط مرة أخرى للتأكيد"; return }
+  btn.disabled=true;
+  tjson("act",{method:"POST",body:body}).then(function(r){
+    btn.disabled=false;
+    if(r.status===409) return toast("هذا الاسم مستخدم في هذه الشعبة");
+    if(r.status!==200) return toast("تعذّر التنفيذ — تحقّق من القيمة والاتصال");
+    toast({"reset-pin":"ثُبّت الرمز الجديد — أبلغه للطالب","rename":"غُيّر الاسم","merge":"دُمج السجلّان",
+           "reset-progress":"صُفّر تقدّم الطالب","delete":"حُذف الطالب"}[a]);
+    if(a==="delete"||a==="merge"){ ST.sel=null; $("#stDetail").hidden=true }
+    stLoad().then(function(){ if(ST.sel) stOpen(ST.sel) });
+  });
+}
+(function(){
+  var t=$("#stTable"); if(!t) return;
+  t.addEventListener("click",function(e){
+    var b=e.target.closest("[data-act]"); if(!b) return;
+    var id=b.closest("tr").dataset.id, s=stFind(id); if(!s) return;
+    if(b.dataset.act==="open") return stOpen(id);
+    if(s.certApproved && b.dataset.c!=="1"){ b.dataset.c="1"; b.textContent="اسحب الاعتماد؟"; return }
+    stCert(s,!s.certApproved);
+  });
+  $("#stDetail").addEventListener("click",function(e){ var b=e.target.closest("[data-a]"); if(b&&ST.sel) stAct(b,ST.sel) });
+  $("#stCls").addEventListener("change",stLoad);
+  $("#stRefresh").addEventListener("click",stLoad);
+  $("#stCsv").addEventListener("click",function(){
+    var c=$("#stCls").value;
+    tfetch("export"+(c?"?cls="+encodeURIComponent(c):"")).then(function(r){ if(r.status!==200) throw new Error(); return r.blob() })
+    .then(function(b){
+      var a=document.createElement("a"); a.href=URL.createObjectURL(b);
+      a.download="طلاب-الجزيرة-الحمراء"+(c?"-"+c.replace(/[^\w-]/g,"_"):"")+".csv";
+      document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove() },1000);
+    }).catch(function(){ toast("تعذّر تنزيل الملف") });
+  });
+  $("#pubGo").addEventListener("click",function(){
+    var cfg={vis:state.vis,en:state.en,hub:state.hub,pres:state.pres,ask:state.ask,res:state.res};
+    tjson("settings",{method:"PUT",body:{cls:$("#pubCls").value||"*",config:cfg}}).then(function(r){
+      toast(r.status===200?"نُشرت الإعدادات — تصل الطلاب عند فتح الصفحة":"تعذّر النشر — تحقّق من الاتصال");
+    });
+  });
+  $("#clsSave").addEventListener("click",function(){
+    var list=$("#clsIn").value.split("\n").map(function(l,i){
+      var p=l.split("|"), code=(p[0]||"").trim(), label=p.slice(1).join("|").trim();
+      return {code:code,label:label||code,sort:i};
+    }).filter(function(c){ return c.code });
+    tjson("classes",{method:"PUT",body:{classes:list}}).then(function(r){
+      if(r.status===200){ toast("حُفظت الشعب"); GATE.loading=null; stLoadClasses() }
+      else if(r.status===409) toast("لا يمكن حذف شعبة فيها طلاب — انقلهم أو احذفهم أولاً");
+      else toast("تحقّق من رموز الشعب: حتى 24 حرفاً، دون تكرار");
+    });
+  });
+})();
 function openTab(k){
   $$(".ttab").forEach(function(x){ x.setAttribute("aria-selected",String(x.dataset.t===k)) });
   $$(".tpane").forEach(function(x){ x.hidden = x.dataset.t!==k });
   state.ttab=k; save();
   if(k==="vis") paintVis();
-  if(k==="tools") paintSets();
+  if(k==="tools"){ paintSets(); if(AUTHED) stLoadClasses() }
+  if(k==="students" && AUTHED){ stLoadClasses().then(stLoad) }
 }
 $$(".ttab").forEach(function(t){ t.addEventListener("click",function(){ openTab(t.dataset.t) }) });
 
