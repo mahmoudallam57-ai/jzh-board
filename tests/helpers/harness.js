@@ -4,10 +4,11 @@ import { createMemoryStore } from "./store-memory.js";
 
 export function makeDeps(over = {}) {
   let t = 1_700_000_000_000;
+  const clock = () => t;
   const deps = {
-    store: createMemoryStore(),
+    store: createMemoryStore({ now: clock }),
     secret: "test-secret",
-    now: () => t,
+    now: clock,
     advance: (ms) => {
       t += ms;
     },

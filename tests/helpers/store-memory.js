@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 
 const clone = (v) => (v === undefined ? v : structuredClone(v));
 
-export function createMemoryStore() {
+export function createMemoryStore({ now = () => Date.now() } = {}) {
   const classes = new Map();
   const students = new Map();
   const progress = new Map();
@@ -40,7 +40,7 @@ export function createMemoryStore() {
         nameNorm,
         cls,
         pinHash,
-        createdAt: Date.now(),
+        createdAt: now(),
         lastSeenAt: null,
       };
       students.set(s.id, s);
@@ -153,7 +153,7 @@ export function createMemoryStore() {
     },
     async setCertificate(sid, approvedBy) {
       if (approvedBy === null) certs.delete(sid);
-      else certs.set(sid, { approvedAt: Date.now(), approvedBy });
+      else certs.set(sid, { approvedAt: now(), approvedBy });
     },
     async getAttempt(key) {
       return attempts.has(key) ? clone(attempts.get(key)) : null;
